@@ -1,7 +1,7 @@
 import Image from "next/image"
 import { sendMagicLink, signInWithPassword } from "./actions"
 
-const inputClass = "mt-1.5 h-12 w-full rounded-xl border border-[#cbd8d0] bg-white px-3.5 text-[#20392f] outline-none transition-colors focus-visible:border-[#285b47] focus-visible:ring-2 focus-visible:ring-[#285b47]/15"
+const inputClass = "login-input mt-1.5 h-12 w-full rounded-xl border border-[#b9c9bd] bg-white px-3.5 text-[#20392f] outline-none transition-colors focus-visible:border-[#285b47] focus-visible:ring-2 focus-visible:ring-[#285b47]/15"
 
 export default async function Login({ searchParams }: { searchParams: Promise<{ sent?: string; error?: string }> }) {
   const query = await searchParams
@@ -14,12 +14,12 @@ export default async function Login({ searchParams }: { searchParams: Promise<{ 
         ? "Tautan belum dapat dikirim. Periksa email dan coba lagi."
         : null
 
-  return <main className="flex min-h-screen items-center justify-center bg-[#f3f5f1] px-4 py-8 text-[#20392f] sm:py-12">
-    <div className="w-full max-w-[440px] rounded-[22px] border border-[#dfe8df] bg-white px-6 py-7 shadow-[0_18px_60px_rgba(30,56,44,0.07)] sm:px-9 sm:py-9">
+  return <main className="flex min-h-screen items-center justify-center bg-[#fff7ea] px-4 py-8 text-[#20392f] sm:py-12">
+    <div className="w-full max-w-[440px] rounded-[22px] border border-[#ead7b9] bg-white px-6 py-7 shadow-[0_18px_60px_rgba(79,56,27,0.07)] sm:px-9 sm:py-9">
       <Image src="/logo-rumah-belajar-satu-baris.svg" width={230} height={68} alt="Rumah Belajar" className="h-auto w-44" priority />
 
       <div className="mt-8">
-        <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#617b6d]">Ruang relawan</p>
+        <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#a85136]">Ruang relawan</p>
         <h1 className="mt-2 font-heading text-[32px] leading-[1.12] tracking-[-0.025em]">Masuk ke asesmen</h1>
         <p className="mt-3 text-sm leading-6 text-[#5b6e63]">Gunakan akun yang sudah terdaftar untuk mengelola asesmen dan posttest.</p>
       </div>

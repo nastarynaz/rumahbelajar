@@ -98,3 +98,14 @@
   .field:focus-visible, .action:focus-visible, .action-secondary:focus-visible, .nav-link:focus-visible, .mobile-nav:focus-visible { outline: 3px solid #e0a13a; outline-offset: 2px; }
 }
 @media (prefers-reduced-motion: reduce) { .action { transition: none; } }
+
+/* Browser autofill should use the same surface and ink as an untouched login field. */
+.login-input:-webkit-autofill,
+.login-input:-webkit-autofill:hover,
+.login-input:-webkit-autofill:focus,
+.login-input:autofill {
+  -webkit-box-shadow: 0 0 0 1000px #fff inset !important;
+  box-shadow: 0 0 0 1000px #fff inset !important;
+  -webkit-text-fill-color: #20392f !important;
+  caret-color: #20392f;
+}
