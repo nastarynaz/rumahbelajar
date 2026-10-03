@@ -1,6 +1,8 @@
 "use client"
 
 import { useRef, useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 
 export function CopyLink({ url, label = "Tautan untuk anak" }: { url: string; label?: string }) {
   const input = useRef<HTMLInputElement>(null)
@@ -14,5 +16,5 @@ export function CopyLink({ url, label = "Tautan untuk anak" }: { url: string; la
       setCopied(false)
     }
   }
-  return <div><label className="block text-sm font-semibold">{label}<input ref={input} className="field mt-2 font-normal" readOnly value={url} onFocus={(event) => event.target.select()} /></label><button type="button" onClick={copy} className="action-secondary mt-3">{copied ? "Tautan tersalin ✓" : "Salin tautan"}</button></div>
+  return <div><label className="block text-sm font-semibold">{label}<Input ref={input} nativeInput className="mt-2 font-normal" readOnly value={url} onFocus={(event) => event.target.select()} /></label><Button type="button" variant="outline" className="mt-3" onClick={copy}>{copied ? "Tautan tersalin ✓" : "Salin tautan"}</Button></div>
 }

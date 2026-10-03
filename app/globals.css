@@ -61,11 +61,31 @@
     font-family: var(--app-font-heading);
   }
 
+  h1,
+  h2,
+  h3,
+  h4,
+  label,
+  legend {
+    font-family: var(--app-font-heading);
+  }
+
+  label input,
+  label select,
+  label textarea {
+    font-family: var(--app-font-sans);
+  }
+
   button,
   input,
   select,
   textarea {
     font: inherit;
+  }
+
+  ::selection {
+    background: var(--brand-forest);
+    color: white;
   }
 }
 
@@ -87,13 +107,12 @@
 }
 @layer utilities {
   .surface { background: white; border: 1px solid #e7dccb; border-radius: 1.25rem; box-shadow: 0 8px 26px rgba(34,54,47,.035); }
-  .action { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; gap: .5rem; border-radius: .75rem; padding: .65rem 1rem; font-weight: 650; background: #2e5a4c; color: white; transition: transform 140ms cubic-bezier(.23,1,.32,1), background-color 140ms ease; }
-  .action:active { transform: scale(.97); }
+  .action { display: inline-flex; min-height: 40px; align-items: center; justify-content: center; gap: .5rem; border-radius: .55rem; padding: .5rem .85rem; font-weight: 600; background: #2e5a4c; color: white; transition: background-color 140ms ease; }
   .action:hover { background: #234b3e; }
-  .action-secondary { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; border: 1px solid #aabdb2; border-radius: .75rem; padding: .65rem 1rem; font-weight: 600; background: white; color: #22362f; }
-  .nav-link { display: inline-flex; min-height: 44px; align-items: center; border-radius: .65rem; padding: .5rem .8rem; color: #2e5a4c; font-weight: 600; }
+  .action-secondary { display: inline-flex; min-height: 40px; align-items: center; justify-content: center; border: 1px solid #aabdb2; border-radius: .55rem; padding: .5rem .85rem; font-weight: 600; background: white; color: #22362f; }
+  .nav-link { display: inline-flex; min-height: 40px; align-items: center; border-radius: .45rem; padding: .4rem .7rem; color: #2e5a4c; font-weight: 600; }
   .nav-link:hover, .mobile-nav:hover { background: #e8f1eb; }
-  .mobile-nav { display: inline-flex; min-width: 65px; min-height: 44px; align-items: center; justify-content: center; border-radius: .65rem; padding: .3rem; color: #2e5a4c; font-size: .78rem; font-weight: 650; }
+  .mobile-nav { display: inline-flex; min-width: 65px; min-height: 40px; align-items: center; justify-content: center; border-radius: .45rem; padding: .3rem; color: #2e5a4c; font-size: .78rem; font-weight: 600; }
   .field { min-height: 44px; width: 100%; border: 1px solid #b7c7bf; border-radius: .75rem; background: white; padding: .6rem .85rem; color: #22362f; }
   .field:focus-visible, .action:focus-visible, .action-secondary:focus-visible, .nav-link:focus-visible, .mobile-nav:focus-visible { outline: 3px solid #e0a13a; outline-offset: 2px; }
 }
