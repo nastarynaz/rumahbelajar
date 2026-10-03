@@ -1,16 +1,48 @@
 import Image from "next/image"
 import { sendMagicLink, signInWithPassword } from "./actions"
 
+const inputClass = "mt-1.5 h-12 w-full rounded-xl border border-[#cbd8d0] bg-white px-3.5 text-[#20392f] outline-none transition-colors focus-visible:border-[#285b47] focus-visible:ring-2 focus-visible:ring-[#285b47]/15"
+
 export default async function Login({ searchParams }: { searchParams: Promise<{ sent?: string; error?: string }> }) {
   const query = await searchParams
-  return <main className="min-h-screen bg-[#f8f3eb] px-4 py-12 text-[#22362f]"><div className="mx-auto max-w-md rounded-[28px] border border-[#e9d8bf] bg-white p-7 shadow-sm sm:p-10">
-    <Image src="/logo-rumah-belajar-satu-baris.svg" width={230} height={68} alt="Rumah Belajar" className="h-auto w-52" />
-    <p className="mt-12 text-xs font-bold uppercase tracking-[.18em] text-[#ad492f]">Ruang relawan</p><h1 className="mt-2 font-heading text-3xl">Masuk ke asesmen</h1>
-    <p className="mt-3 text-sm leading-6 text-[#466055]">Masuk dengan akun yang sudah terdaftar. Relawan yang diundang juga bisa memakai tautan sekali pakai.</p>
-    {query.sent && <p role="status" className="mt-6 rounded-xl bg-[#e8f3ee] p-4 text-sm">Tautan masuk sudah dikirim. Periksa kotak masuk email Anda.</p>}
-    {query.error && <p role="alert" className="mt-6 rounded-xl bg-[#fff1ea] p-4 text-sm">{query.error === "tautan" ? "Tautan sudah tidak berlaku. Minta tautan baru." : query.error === "credentials" ? "Email atau password tidak cocok." : "Email tidak valid atau tautan gagal dikirim. Coba lagi."}</p>}
-    <form action={signInWithPassword} className="mt-7 space-y-4"><div><label htmlFor="email" className="block text-sm font-semibold">Email</label><input id="email" name="email" type="email" required autoComplete="username" className="mt-2 h-12 w-full rounded-xl border border-[#b7c7bf] px-4 outline-none focus-visible:ring-2 focus-visible:ring-[#2e5a4c]" /></div><div><label htmlFor="password" className="block text-sm font-semibold">Password</label><input id="password" name="password" type="password" required autoComplete="current-password" className="mt-2 h-12 w-full rounded-xl border border-[#b7c7bf] px-4 outline-none focus-visible:ring-2 focus-visible:ring-[#2e5a4c]" /></div><button className="brand-primary min-h-12 w-full rounded-xl px-5 font-semibold">Masuk</button></form>
-    <div className="my-7 flex items-center gap-3 text-xs text-[#63776c]"><span className="h-px flex-1 bg-[#e9d8bf]" />Atau gunakan tautan email<span className="h-px flex-1 bg-[#e9d8bf]" /></div>
-    <form action={sendMagicLink} className="space-y-4"><div><label htmlFor="link-email" className="block text-sm font-semibold">Email untuk tautan masuk</label><input id="link-email" name="email" type="email" required autoComplete="email" className="mt-2 h-12 w-full rounded-xl border border-[#b7c7bf] px-4 outline-none focus-visible:ring-2 focus-visible:ring-[#2e5a4c]" /></div><button className="min-h-12 w-full rounded-xl border border-[#2e5a4c] px-5 font-semibold text-[#2e5a4c]">Kirim tautan masuk</button></form>
-  </div></main>
+  const linkState = Boolean(query.sent || query.error === "email" || query.error === "kirim")
+  const errorMessage = query.error === "tautan"
+    ? "Tautan sudah tidak berlaku. Minta tautan baru."
+    : query.error === "credentials"
+      ? "Email atau password tidak cocok."
+      : query.error
+        ? "Tautan belum dapat dikirim. Periksa email dan coba lagi."
+        : null
+
+  return <main className="flex min-h-screen items-center justify-center bg-[#f3f5f1] px-4 py-8 text-[#20392f] sm:py-12">
+    <div className="w-full max-w-[440px] rounded-[22px] border border-[#dfe8df] bg-white px-6 py-7 shadow-[0_18px_60px_rgba(30,56,44,0.07)] sm:px-9 sm:py-9">
+      <Image src="/logo-rumah-belajar-satu-baris.svg" width={230} height={68} alt="Rumah Belajar" className="h-auto w-44" priority />
+
+      <div className="mt-8">
+        <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#617b6d]">Ruang relawan</p>
+        <h1 className="mt-2 font-heading text-[32px] leading-[1.12] tracking-[-0.025em]">Masuk ke asesmen</h1>
+        <p className="mt-3 text-sm leading-6 text-[#5b6e63]">Gunakan akun yang sudah terdaftar untuk mengelola asesmen dan posttest.</p>
+      </div>
+
+      {query.sent && <p role="status" className="mt-5 rounded-xl border border-[#cfe2d5] bg-[#f1f8f3] px-4 py-3 text-sm leading-5 text-[#285b47]">Tautan masuk sudah dikirim. Periksa kotak masuk email Anda.</p>}
+      {errorMessage && <p role="alert" className="mt-5 rounded-xl border border-[#ead8ce] bg-[#fdf5f1] px-4 py-3 text-sm leading-5 text-[#823f31]">{errorMessage}</p>}
+
+      <form action={signInWithPassword} className="mt-7 space-y-4">
+        <div><label htmlFor="email" className="block text-sm font-semibold">Email</label><input id="email" name="email" type="email" required autoComplete="username" className={inputClass} /></div>
+        <div><label htmlFor="password" className="block text-sm font-semibold">Password</label><input id="password" name="password" type="password" required autoComplete="current-password" className={inputClass} /></div>
+        <button className="mt-1 min-h-12 w-full rounded-xl bg-[#285b47] px-5 font-semibold text-white transition-[background-color,transform] duration-150 ease-out hover:bg-[#204b3a] active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#285b47]">Masuk</button>
+      </form>
+
+      <details open={linkState} className="group mt-6 border-t border-[#e6ece5] pt-5">
+        <summary className="cursor-pointer list-none text-center text-sm font-semibold text-[#285b47] outline-none hover:text-[#204b3a] focus-visible:rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#285b47] [&::-webkit-details-marker]:hidden">Masuk lewat tautan email <span aria-hidden="true" className="ml-1 inline-block transition-transform duration-150 group-open:rotate-180">⌄</span></summary>
+        <div className="pt-5">
+          <p className="mb-4 text-sm leading-5 text-[#5b6e63]">Kami akan mengirim tautan sekali pakai ke email yang sudah terdaftar.</p>
+          <form action={sendMagicLink} className="space-y-4">
+            <div><label htmlFor="link-email" className="block text-sm font-semibold">Email untuk tautan</label><input id="link-email" name="email" type="email" required autoComplete="email" className={inputClass} /></div>
+            <button className="min-h-12 w-full rounded-xl border border-[#b8cec0] bg-white px-5 font-semibold text-[#285b47] transition-colors duration-150 hover:bg-[#f2f7f2] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#285b47]">Kirim tautan masuk</button>
+          </form>
+        </div>
+      </details>
+    </div>
+  </main>
 }
