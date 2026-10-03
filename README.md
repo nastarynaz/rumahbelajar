@@ -7,9 +7,26 @@ Aplikasi privat untuk relawan menjalankan asesmen numerasi satu per satu. Anak m
 1. `pnpm install`
 2. Buat proyek Supabase. Jalankan migrasi di `supabase/migrations/` sesuai urutan nama file melalui Supabase CLI atau SQL editor. Jangan ubah PDF pada folder `../data/`.
 3. Salin `.env.example` menjadi `.env.local`, lalu isi URL proyek, **publishable key**, URL situs, dan **secret key hanya di server** untuk undangan tim. Jangan beri prefix `NEXT_PUBLIC_` pada secret key.
-4. Di Supabase Auth, aktifkan email OTP dan atur Site URL serta Redirect URL `http://localhost:3000/auth/confirm` (tambahkan domain produksi nanti). Undang relawan dari `/settings/team`; registrasi publik tidak digunakan.
-5. Buat admin pertama melalui langkah di bawah.
-6. Jalankan `pnpm dev`, buka `/login`.
+4. Di Supabase Auth, aktifkan email OTP. Atur **Site URL** ke alamat aplikasi (misalnya `http://localhost:3000` saat lokal) dan tambahkan `<alamat-aplikasi>/auth/confirm` ke **Redirect URLs**. Samakan `NEXT_PUBLIC_SITE_URL` dengan alamat aplikasi tersebut.
+5. Atur template email **Magic Link** dan **Invite User** seperti di bawah. Untuk pengiriman email produksi, pasang custom SMTP di Supabase Auth.
+6. Buat admin pertama melalui langkah di bawah.
+7. Jalankan `pnpm dev`, buka `/login`.
+
+### Tautan email untuk login
+
+Di **Authentication → Email Templates**, ubah tautan tombol pada template **Magic Link** menjadi:
+
+```html
+<a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email">Masuk ke Rumah Belajar</a>
+```
+
+Pada template **Invite User**, gunakan:
+
+```html
+<a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=invite">Terima undangan</a>
+```
+
+Callback aplikasi memverifikasi token dan membuat sesi di cookie. Tautan bawaan Supabase yang memakai fragmen URL tidak dapat diproses oleh callback server ini.
 
 ### Admin pertama
 

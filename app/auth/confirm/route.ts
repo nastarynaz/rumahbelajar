@@ -10,9 +10,9 @@ export async function GET(request: NextRequest) {
   }
   const token_hash = request.nextUrl.searchParams.get("token_hash")
   const type = request.nextUrl.searchParams.get("type")
-  if (token_hash && type === "magiclink") {
+  if (token_hash && (type === "magiclink" || type === "email" || type === "invite")) {
     const supabase = await createClient()
-    const { error } = await supabase.auth.verifyOtp({ token_hash, type: "magiclink" })
+    const { error } = await supabase.auth.verifyOtp({ token_hash, type })
     if (!error) return NextResponse.redirect(new URL("/dashboard", request.url))
   }
   return NextResponse.redirect(new URL("/login?error=tautan", request.url))
