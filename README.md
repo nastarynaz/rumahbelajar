@@ -41,6 +41,8 @@ values ('UUID_ORGANISASI','UUID_USER_AUTH','admin');
 
 Trigger migrasi membuat `profiles` untuk akun Auth baru. Untuk relawan berikutnya, admin mengirim undangan dan mengatur penugasan di `/settings/team`. Jangan mengaktifkan pendaftaran email bebas.
 
+Jika admin ingin masuk dengan password, buat akun lewat **Authentication → Users → Add user** dengan email dan password di dashboard Supabase, lalu jalankan SQL keanggotaan di atas. Password tidak disimpan dalam kode aplikasi atau SQL migrasi. Halaman `/login` menerima email dan password; tautan email tetap tersedia untuk relawan. Gunakan alamat email yang dapat menerima pesan agar pemulihan akun tetap mungkin.
+
 ## Alur
 
 `/login` → `/dashboard` → `/participants` → `/assessments/new` → `/assessments/[id]/run` → `/assessments/[id]/review` → `/assessments/[id]/result`. `/reports` menampilkan agregat hanya jika ada minimal lima peserta berbeda dalam filter. Admin juga memiliki `/settings/participants`, `/settings/team`, dan `/settings/instrument`.

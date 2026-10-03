@@ -4,6 +4,15 @@ import { headers } from "next/headers"
 import { z } from "zod"
 import { createClient } from "@/lib/supabase/server"
 
+export async function signInWithPassword(formData: FormData) {
+  const input = z.object({ email: z.email(), password: z.string().min(1).max(256) }).safeParse(Object.fromEntries(formData))
+  if (!input.success) redirect("/login?error=credentials")
+  const supabase = await createClient()
+  const { error } = await supabase.auth.signInWithPassword(input.data)
+  if (error) redirect("/login?error=credentials")
+  redirect("/dashboard")
+}
+
 export async function sendMagicLink(formData: FormData) {
   const email = z.email().safeParse(formData.get("email"))
   if (!email.success) redirect("/login?error=email")
