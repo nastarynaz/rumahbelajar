@@ -1,0 +1,1 @@
+export default function Loading() { return <main className="mx-auto max-w-6xl p-5" aria-busy="true" aria-label="Memuat halaman"><div className="mb-6 h-14 w-48 animate-pulse rounded-xl bg-[#e8decd]" /><div className="h-32 animate-pulse rounded-3xl bg-[#eee6d8]" /><div className="mt-4 h-32 animate-pulse rounded-3xl bg-[#eee6d8]" /></main> }

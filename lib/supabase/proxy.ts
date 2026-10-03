@@ -1,0 +1,33 @@
+import { createServerClient } from "@supabase/ssr"
+import { NextResponse, type NextRequest } from "next/server"
+
+export async function updateSession(request: NextRequest) {
+  let response = NextResponse.next({ request })
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+  if (!url || !key) return response
+  const supabase = createServerClient(url, key, {
+    cookies: {
+      getAll() { return request.cookies.getAll() },
+      setAll(items) {
+        items.forEach(({ name, value }) => request.cookies.set(name, value))
+        response = NextResponse.next({ request })
+        items.forEach(({ name, value, options }) => response.cookies.set(name, value, options))
+      },
+    },
+  })
+  const { data: { user } } = await supabase.auth.getUser()
+  const publicPath = request.nextUrl.pathname === "/login" || request.nextUrl.pathname.startsWith("/auth/") || request.nextUrl.pathname.startsWith("/quiz/")
+  if (!user && !publicPath) {
+    const redirect = request.nextUrl.clone()
+    redirect.pathname = "/login"
+    redirect.search = ""
+    return NextResponse.redirect(redirect)
+  }
+  if (user && request.nextUrl.pathname === "/login") {
+    const redirect = request.nextUrl.clone()
+    redirect.pathname = "/dashboard"
+    return NextResponse.redirect(redirect)
+  }
+  return response
+}

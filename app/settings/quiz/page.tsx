@@ -1,0 +1,18 @@
+import Link from "next/link"
+import { requireAdmin } from "@/lib/auth"
+import { Shell, Empty } from "@/components/product/shell"
+import { createPublicQuiz, setPublicQuizOpen } from "@/app/settings/actions"
+
+export default async function QuizSettingsPage() {
+  const { supabase, membership } = await requireAdmin()
+  const [quizzes, attempts] = await Promise.all([
+    supabase.from("public_quizzes").select("id,slug,title,is_open,version,created_at").eq("organization_id", membership.organization_id).order("created_at", { ascending: false }),
+    supabase.from("public_quiz_attempts").select("id,quiz_id,full_name,age_years,result,created_at").eq("organization_id", membership.organization_id).order("created_at", { ascending: false }).limit(100),
+  ])
+  if (quizzes.error || attempts.error) throw new Error("Kuis belum dapat dimuat.")
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? ""
+  return <Shell title="Kuis mandiri" eyebrow="Pengaturan admin" admin action={<Link href="/settings/team" className="action-secondary">Pengaturan tim</Link>}><p className="mb-6 max-w-2xl text-sm leading-6 text-[#4d6156]">Bagikan tautan kepada peserta. Anak menjawab sendiri tanpa login; nama lengkap, umur, jawaban, dan hasil hanya terlihat oleh admin. Kuis ini terpisah dari asesmen Tangga Angka oleh relawan.</p><form action={createPublicQuiz}><button className="action">Buat tautan kuis baru</button></form>
+    <section className="mt-7"><h2 className="mb-3 font-heading text-2xl">Tautan aktif</h2>{quizzes.data?.length ? <div className="space-y-3">{quizzes.data.map((quiz) => <div key={quiz.id} className="surface p-5"><div className="flex flex-wrap items-center justify-between gap-4"><div><h3 className="font-heading text-xl">{quiz.title}</h3><p className="mt-1 text-sm text-[#4d6156]">{quiz.version} · {quiz.is_open ? "Terbuka" : "Ditutup"}</p></div><form action={setPublicQuizOpen}><input type="hidden" name="quiz_id" value={quiz.id} /><input type="hidden" name="is_open" value={quiz.is_open ? "false" : "true"} /><button className="action-secondary">{quiz.is_open ? "Tutup tautan" : "Buka tautan"}</button></form></div><label className="mt-4 block text-sm font-semibold">Alamat untuk dibagikan<input className="field mt-2 font-normal" readOnly value={`${siteUrl}/quiz/${quiz.slug}`} onFocus={(event) => event.target.select()} /></label><Link className="mt-3 inline-flex min-h-11 items-center font-semibold text-[#2e5a4c] underline" href={`/quiz/${quiz.slug}`} target="_blank">Pratinjau kuis ↗</Link></div>)}</div> : <Empty title="Belum ada tautan" body="Buat tautan pertama, lalu bagikan kepada peserta." />}</section>
+    <section className="mt-8"><h2 className="mb-3 font-heading text-2xl">Kiriman terbaru (maks. 100)</h2>{attempts.data?.length ? <div className="surface overflow-x-auto"><table className="min-w-full text-left text-sm"><thead className="bg-[#f7f2e9]"><tr><th className="p-4">Nama lengkap</th><th className="p-4">Umur</th><th className="p-4">Hasil kuis</th><th className="p-4">Waktu</th></tr></thead><tbody>{attempts.data.map((attempt) => { const result = attempt.result as {correct:number;total:number}; return <tr key={attempt.id} className="border-t border-[#eadfce]"><td className="p-4 font-semibold"><Link className="text-[#2e5a4c] underline" href={`/settings/quiz/${attempt.id}`}>{attempt.full_name}</Link></td><td className="p-4">{attempt.age_years}</td><td className="p-4">{result.correct}/{result.total} jawaban tepat</td><td className="p-4">{new Date(attempt.created_at).toLocaleString("id-ID")}</td></tr> })}</tbody></table></div> : <Empty title="Belum ada kiriman" body="Jawaban peserta akan muncul di sini setelah kuis dikirim." />}</section>
+  </Shell>
+}
