@@ -8,15 +8,17 @@ begin
       'organizations','profiles','organization_members','programs','participants',
       'assessor_assignments','instruments','instrument_levels','questions',
       'assessment_sessions','assessment_responses','assessment_observations','audit_logs',
-      'public_quizzes','public_quiz_questions','public_quiz_attempts','public_quiz_rate_limits'
-     ])) <> 17 then raise exception 'Ada tabel aplikasi yang belum dibuat'; end if;
+      'public_quizzes','public_quiz_questions','public_quiz_attempts','public_quiz_rate_limits',
+      'platform_admins','public_quiz_items'
+     ])) <> 19 then raise exception 'Ada tabel aplikasi yang belum dibuat'; end if;
  select string_agg(c.relname, ', ') into missing_rls
  from pg_class c join pg_namespace n on n.oid=c.relnamespace
  where n.nspname='public' and c.relname = any(array[
   'organizations','profiles','organization_members','programs','participants',
   'assessor_assignments','instruments','instrument_levels','questions',
   'assessment_sessions','assessment_responses','assessment_observations','audit_logs',
-  'public_quizzes','public_quiz_questions','public_quiz_attempts','public_quiz_rate_limits'
+  'public_quizzes','public_quiz_questions','public_quiz_attempts','public_quiz_rate_limits',
+  'platform_admins','public_quiz_items'
  ]) and c.relkind='r' and not c.relrowsecurity;
  if missing_rls is not null then raise exception 'RLS belum aktif pada: %',missing_rls; end if;
  if (select count(*) from public.instrument_levels l join public.instruments i on i.id=l.instrument_id where i.version='tangga-angka-v1')<>7 then
@@ -31,8 +33,21 @@ begin
  if exists(select 1 from public.public_quiz_questions where version='kuis-numerasi-v1' and not options ? answer) then
   raise exception 'Kunci kuis tidak ada dalam pilihan';
  end if;
+ if not exists(select 1 from public.platform_admins p join auth.users u on u.id=p.user_id
+   where lower(u.email)='admin@roemah-belajar.vercel.app') then
+  raise exception 'Akun super admin belum terdaftar';
+ end if;
+ if exists(select 1 from public.public_quizzes q where not exists
+   (select 1 from public.public_quiz_items i where i.quiz_id=q.id)) then
+  raise exception 'Ada kuis tanpa soal';
+ end if;
+ if exists(select 1 from public.public_quiz_items where not options ? answer) then
+  raise exception 'Ada kunci soal formulir di luar pilihan';
+ end if;
  if has_table_privilege('anon','public.public_quiz_attempts','SELECT')
     or has_table_privilege('anon','public.public_quiz_questions','SELECT')
+    or has_table_privilege('anon','public.public_quiz_items','SELECT')
+    or has_table_privilege('authenticated','public.platform_admins','INSERT')
     or has_table_privilege('authenticated','public.public_quiz_questions','SELECT')
     or has_table_privilege('authenticated','public.assessment_responses','INSERT')
     or has_table_privilege('authenticated','public.assessment_sessions','INSERT')
@@ -44,7 +59,8 @@ begin
  end if;
  if not has_column_privilege('authenticated','public.public_quizzes','is_open','UPDATE')
     or not has_column_privilege('authenticated','public.public_quiz_attempts','participant_id','UPDATE')
-    or not has_table_privilege('service_role','public.public_quiz_questions','SELECT') then
+    or not has_table_privilege('service_role','public.public_quiz_questions','SELECT')
+    or not has_table_privilege('service_role','public.public_quiz_items','SELECT') then
   raise exception 'Hak akses aplikasi kurang';
  end if;
  if has_function_privilege('anon','public.submit_public_quiz(text,uuid,text,integer,jsonb,text)','EXECUTE')
@@ -52,6 +68,8 @@ begin
   raise exception 'Hak akses fungsi kuis tidak sesuai';
  end if;
  if not exists(select 1 from pg_trigger where tgrelid='public.public_quizzes'::regclass and tgname='keep_quiz_identity' and not tgisinternal)
+    or not exists(select 1 from pg_trigger where tgrelid='public.public_quizzes'::regclass and tgname='seed_public_quiz_items' and not tgisinternal)
+    or not exists(select 1 from pg_trigger where tgrelid='public.public_quiz_items'::regclass and tgname='guard_quiz_item_edit' and not tgisinternal)
     or not exists(select 1 from pg_trigger where tgrelid='public.assessment_observations'::regclass and tgname='keep_observation_session' and not tgisinternal)
     or not exists(select 1 from pg_trigger where tgrelid='public.public_quiz_attempts'::regclass and tgname='audit_quiz_link' and not tgisinternal) then
   raise exception 'Trigger integritas atau audit belum terpasang';

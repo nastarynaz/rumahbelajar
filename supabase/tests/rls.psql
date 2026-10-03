@@ -16,6 +16,7 @@ select 1 / case when exists(select 1 from public.participants where id=:'partici
  then 1 else 0 end as admin_organization_isolation;
 select 1 / case when not has_table_privilege('anon','public.public_quiz_attempts','SELECT')
  and not has_table_privilege('anon','public.public_quiz_questions','SELECT')
+ and not has_table_privilege('anon','public.public_quiz_items','SELECT')
  and not has_function_privilege('anon','public.submit_public_quiz(text,uuid,text,integer,jsonb,text)','EXECUTE')
  then 1 else 0 end as public_quiz_private_rows;
 rollback;

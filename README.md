@@ -5,11 +5,11 @@ Aplikasi privat untuk relawan menjalankan asesmen numerasi satu per satu. Anak m
 ## Menjalankan
 
 1. `pnpm install`
-2. Buat proyek Supabase. Jalankan migrasi di `supabase/migrations/` sesuai urutan nama file melalui Supabase CLI atau SQL editor. Jangan ubah PDF pada folder `../data/`.
+2. Buat proyek Supabase. Jalankan migrasi `001` sampai `006` sesuai urutan. Jangan ubah PDF pada folder `../data/`.
 3. Salin `.env.example` menjadi `.env.local`, lalu isi URL proyek, **publishable key**, URL situs, dan **secret key hanya di server** untuk undangan tim. Jangan beri prefix `NEXT_PUBLIC_` pada secret key.
 4. Di Supabase Auth, aktifkan email OTP. Atur **Site URL** ke alamat aplikasi (misalnya `http://localhost:3000` saat lokal) dan tambahkan `<alamat-aplikasi>/auth/confirm` ke **Redirect URLs**. Samakan `NEXT_PUBLIC_SITE_URL` dengan alamat aplikasi tersebut.
 5. Atur template email **Magic Link** dan **Invite User** seperti di bawah. Untuk pengiriman email produksi, pasang custom SMTP di Supabase Auth.
-6. Buat admin pertama melalui langkah di bawah.
+6. Buat admin pertama melalui langkah di bawah, kemudian jalankan migrasi `007` dan `008`. Migrasi `007` menetapkan `admin@roemah-belajar.vercel.app` sebagai super admin dan memerlukan akun tersebut sudah ada di Supabase Auth.
 7. Jalankan `pnpm dev`, buka `/login`.
 
 ### Tautan email untuk login
@@ -45,7 +45,7 @@ Jika admin ingin masuk dengan password, buat akun lewat **Authentication → Use
 
 ## Alur
 
-`/login` → `/dashboard` → `/participants` → `/assessments/new` → `/assessments/[id]/run` → `/assessments/[id]/review` → `/assessments/[id]/result`. `/reports` menampilkan agregat hanya jika ada minimal lima peserta berbeda dalam filter. Admin juga memiliki `/settings/participants`, `/settings/team`, dan `/settings/instrument`.
+`/login` → `/dashboard` → `/participants` → `/assessments/new` → `/assessments/[id]/run` → `/assessments/[id]/review` → `/assessments/[id]/result`. `/reports` menampilkan agregat hanya jika ada minimal lima peserta berbeda dalam filter. Admin juga memiliki `/settings/participants`, `/settings/team`, dan `/settings/instrument`. Super admin memiliki `/super-admin` untuk membuat organisasi dan menetapkan admin organisasi dari akun Auth yang sudah ada.
 
 Draft jawaban disimpan ke database per tindakan. Jika koneksi terputus, tab menahan antrean jawaban di memori dan mencoba lagi saat online. **Jangan tutup tab ketika status masih “Belum tersinkron”.** Data anak tidak ditulis ke localStorage atau sessionStorage. Dua perangkat pada sesi yang sama akan menerima konflik revisi, lalu perlu memuat ulang.
 
@@ -70,8 +70,8 @@ Dokumen: [arsitektur](docs/architecture.md), [privasi](docs/privacy.md), [aturan
 
 ## Posttest mandiri
 
-Admin membuka `/settings/quiz`, membuat tautan `Posttest Numerasi`, lalu membagikannya. Anak membuka `/quiz/[slug]` tanpa login, mengisi **nama lengkap dan umur angka**, menjawab 12 soal pilihan, lalu mendapat konfirmasi pengiriman. Soal boleh dilewati. Admin melihat daftar kiriman dan skor di `/settings/quiz`, lalu dapat menautkan kiriman ke peserta setelah memeriksa identitas. Riwayat yang sudah ditautkan muncul pada profil peserta. Kuis mandiri adalah instrumen `kuis-numerasi-v1` yang berbeda dari asesmen Tangga Angka oleh relawan; skornya tidak dikonversi menjadi level A–F.
+Admin membuka `/settings/quiz`, membuat formulir dengan 12 soal awal, lalu dapat mengubah judul, soal, pilihan, kunci, dan status wajib. Soal dapat ditambah atau dihapus saat tautan ditutup. Setelah diperiksa, admin membuka tautan dan membagikannya. Anak membuka `/quiz/[slug]` tanpa login, mengisi **nama lengkap dan umur angka**, lalu menjawab satu soal per layar. Soal tanpa tanda wajib boleh dilewati. Admin melihat daftar kiriman dan skor di `/settings/quiz`, lalu dapat menautkan kiriman ke peserta setelah memeriksa identitas. Riwayat yang sudah ditautkan muncul pada profil peserta. Kuis mandiri tetap terpisah dari asesmen Tangga Angka oleh relawan; skornya tidak dikonversi menjadi level A–F.
 
 Tautan memakai slug acak dan dapat ditutup admin. Kunci jawaban tidak dikirim ke browser. Submisi melewati validasi server, batas 100 kiriman per jam per hash IP dan tautan (agar perangkat pada jaringan bersama tetap dapat mengisi), serta kunci idempotensi. Nama, umur, jawaban, dan skor hanya dapat dibaca admin organisasi. Secret key Supabase wajib tersedia hanya di server untuk membuka kuis publik dan memproses submisi.
 
-Setelah migrasi, jalankan `supabase/tests/migration_smoke.sql` di SQL Editor untuk memeriksa jumlah soal, status RLS, dan hak akses dasar. `supabase/tests/rls.psql` memerlukan akun uji lintas organisasi untuk memeriksa isolasi baris.
+Untuk proyek yang telah menjalankan `001`–`006`, jalankan **hanya** `202610040007_super_admin.sql` lalu `202610040008_quiz_builder.sql` di SQL Editor. Setelah itu jalankan `supabase/tests/migration_smoke.sql` untuk memeriksa jumlah soal, status RLS, hak akses, dan trigger. `supabase/tests/rls.psql` memerlukan akun uji lintas organisasi untuk memeriksa isolasi baris. Pastikan `SUPABASE_SECRET_KEY` di Vercel Production terisi dan redeploy; nilai ini tidak boleh berada di Git atau browser.

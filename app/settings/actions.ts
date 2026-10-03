@@ -50,24 +50,6 @@ export async function inviteAssessor(formData: FormData) {
   revalidatePath("/settings/team")
 }
 
-export async function createPublicQuiz() {
-  const { randomBytes } = await import("node:crypto")
-  const { supabase, membership } = await requireAdmin()
-  const slug = randomBytes(12).toString("base64url")
-  const { error } = await supabase.from("public_quizzes").insert({ organization_id: membership.organization_id, slug, title: "Posttest Numerasi", version: "kuis-numerasi-v1", is_open: true })
-  if (error) throw new Error("Tautan kuis belum dapat dibuat.")
-  revalidatePath("/settings/quiz")
-}
-
-export async function setPublicQuizOpen(formData: FormData) {
-  const id = z.uuid().parse(formData.get("quiz_id"))
-  const isOpen = formData.get("is_open") === "true"
-  const { supabase, membership } = await requireAdmin()
-  const { error } = await supabase.from("public_quizzes").update({ is_open: isOpen }).eq("id", id).eq("organization_id", membership.organization_id)
-  if (error) throw new Error("Status kuis belum tersimpan.")
-  revalidatePath("/settings/quiz")
-}
-
 export async function linkQuizAttempt(formData: FormData) {
   const input = z.object({ attempt_id: z.uuid(), participant_id: z.union([z.uuid(), z.literal("")]) }).parse(Object.fromEntries(formData))
   const { supabase, membership } = await requireAdmin()

@@ -8,7 +8,7 @@ const schema = z.object({
   submissionKey: z.uuid(),
   fullName: z.string().trim().min(2).max(120),
   ageYears: z.number().int().min(4).max(99),
-  answers: z.array(z.object({ question_id: z.string().max(30), value: z.string().max(80) })).max(30),
+  answers: z.array(z.object({ question_id: z.string().max(30), value: z.string().max(80) })).max(50),
   website: z.string().max(200).default(""),
 })
 
@@ -22,10 +22,16 @@ export async function submitQuiz(slug: string, payload: unknown) {
   if (!secret) throw new Error("Kuis belum dikonfigurasi.")
   const clientHash = createHmac("sha256", secret).update(ip).digest("hex")
   const admin = createAdminClient()
-  const { error } = await admin.rpc("submit_public_quiz", {
+  const { data: attemptId, error } = await admin.rpc("submit_public_quiz", {
     target_slug: slug, request_key: input.data.submissionKey, name_input: input.data.fullName,
     age_input: input.data.ageYears, answers_input: input.data.answers, client_hash: clientHash,
   })
-  if (error) throw new Error(error.message.includes("Terlalu banyak") ? "Terlalu banyak kiriman. Coba lagi nanti." : "Jawaban belum terkirim. Periksa koneksi lalu coba lagi.")
-  return { ok: true }
+  if (error) {
+    console.error("quiz_submit_failed", error.code)
+    throw new Error(error.message.includes("Terlalu banyak") ? "Terlalu banyak kiriman. Coba lagi nanti." : error.message.includes("wajib") ? "Masih ada soal wajib yang belum dijawab." : "Jawaban belum terkirim. Coba lagi.")
+  }
+  const { data: attempt } = await admin.from("public_quiz_attempts").select("result").eq("id", attemptId).maybeSingle()
+  const result = attempt?.result as { correct?: number; total?: number } | undefined
+  return { ok: true, score: result && typeof result.correct === "number" && typeof result.total === "number"
+    ? { correct: result.correct, total: result.total } : null }
 }
