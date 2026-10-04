@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/auth"
 import { linkQuizAttempt } from "@/app/settings/actions"
 import { Shell } from "@/components/product/shell"
 import { Button } from "@/components/ui/button"
+import { NativeSelect } from "@/components/ui/native-select"
 
 export default async function QuizAttemptPage({
   params,
@@ -69,7 +70,7 @@ export default async function QuizAttemptPage({
         <input type="hidden" name="attempt_id" value={attempt.id} />
         <label className="block text-sm font-semibold">
           Peserta
-          <select
+          <NativeSelect
             name="participant_id"
             className="field mt-2"
             defaultValue={attempt.participant_id ?? ""}
@@ -81,7 +82,7 @@ export default async function QuizAttemptPage({
                 {participant.code ? ` · ${participant.code}` : ""}
               </option>
             ))}
-          </select>
+          </NativeSelect>
         </label>
         <Button type="submit">Simpan tautan</Button>
       </form>

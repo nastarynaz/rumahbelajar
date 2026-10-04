@@ -1,4 +1,6 @@
 import Image from "next/image"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { sendMagicLink, signInWithPassword } from "./actions"
 
 const inputClass = "login-input mt-1.5 h-12 w-full rounded-xl border border-[#b9c9bd] bg-white px-3.5 text-[#20392f] outline-none transition-colors focus-visible:border-[#285b47] focus-visible:ring-2 focus-visible:ring-[#285b47]/15"
@@ -28,9 +30,9 @@ export default async function Login({ searchParams }: { searchParams: Promise<{ 
       {errorMessage && <p role="alert" className="mt-5 rounded-xl border border-[#ead8ce] bg-[#fdf5f1] px-4 py-3 text-sm leading-5 text-[#823f31]">{errorMessage}</p>}
 
       <form action={signInWithPassword} className="mt-7 space-y-4">
-        <div><label htmlFor="email" className="block text-sm font-semibold">Email</label><input id="email" name="email" type="email" required autoComplete="username" className={inputClass} /></div>
-        <div><label htmlFor="password" className="block text-sm font-semibold">Password</label><input id="password" name="password" type="password" required autoComplete="current-password" className={inputClass} /></div>
-        <button className="mt-1 min-h-12 w-full rounded-xl bg-[#285b47] px-5 font-semibold text-white transition-[background-color,transform] duration-150 ease-out hover:bg-[#204b3a] active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#285b47]">Masuk</button>
+        <div><label htmlFor="email" className="block text-sm font-semibold">Email</label><Input id="email" name="email" type="email" required autoComplete="username" className={inputClass} /></div>
+        <div><label htmlFor="password" className="block text-sm font-semibold">Password</label><Input id="password" name="password" type="password" required autoComplete="current-password" className={inputClass} /></div>
+        <Button type="submit" className="mt-1 min-h-12 w-full bg-[#285b47] text-white hover:bg-[#204b3a]">Masuk</Button>
       </form>
 
       <details open={linkState} className="group mt-6 border-t border-[#e6ece5] pt-5">
@@ -38,8 +40,8 @@ export default async function Login({ searchParams }: { searchParams: Promise<{ 
         <div className="pt-5">
           <p className="mb-4 text-sm leading-5 text-[#5b6e63]">Kami akan mengirim tautan sekali pakai ke email yang sudah terdaftar.</p>
           <form action={sendMagicLink} className="space-y-4">
-            <div><label htmlFor="link-email" className="block text-sm font-semibold">Email untuk tautan</label><input id="link-email" name="email" type="email" required autoComplete="email" className={inputClass} /></div>
-            <button className="min-h-12 w-full rounded-xl border border-[#b8cec0] bg-white px-5 font-semibold text-[#285b47] transition-colors duration-150 hover:bg-[#f2f7f2] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#285b47]">Kirim tautan masuk</button>
+            <div><label htmlFor="link-email" className="block text-sm font-semibold">Email untuk tautan</label><Input id="link-email" name="email" type="email" required autoComplete="email" className={inputClass} /></div>
+            <Button type="submit" variant="outline" className="min-h-12 w-full border-[#b8cec0] text-[#285b47] hover:bg-[#f2f7f2]">Kirim tautan masuk</Button>
           </form>
         </div>
       </details>

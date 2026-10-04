@@ -4,6 +4,8 @@ import { requireUser } from "@/lib/auth"
 import { Shell, Empty } from "@/components/product/shell"
 import { createAssessment } from "@/app/assessments/actions"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { NativeSelect } from "@/components/ui/native-select"
 
 export default async function NewAssessmentPage({
   searchParams,
@@ -61,10 +63,9 @@ export default async function NewAssessmentPage({
             >
               Peserta
             </label>
-            <select
+            <NativeSelect
               id="participant_id"
               name="participant_id"
-              className="field"
               defaultValue={participant ?? data[0].id}
             >
               {data.map((person) => (
@@ -72,28 +73,27 @@ export default async function NewAssessmentPage({
                   {person.display_name}
                 </option>
               ))}
-            </select>
+            </NativeSelect>
           </div>
           <div className="grid gap-5 sm:grid-cols-2">
             <div>
               <label className="mb-2 block font-semibold" htmlFor="type">
                 Jenis sesi
               </label>
-              <select id="type" name="type" className="field">
+              <NativeSelect id="type" name="type">
                 <option value="baseline">Baseline</option>
                 <option value="posttest">Posttest</option>
                 <option value="reassessment">Asesmen ulang</option>
-              </select>
+              </NativeSelect>
             </div>
             <div>
               <label className="mb-2 block font-semibold" htmlFor="assessed_on">
                 Tanggal
               </label>
-              <input
+              <Input
                 id="assessed_on"
                 name="assessed_on"
                 type="date"
-                className="field"
                 required
                 defaultValue={new Date().toISOString().slice(0, 10)}
               />
@@ -103,10 +103,9 @@ export default async function NewAssessmentPage({
             <label className="mb-2 block font-semibold" htmlFor="start_level">
               Level mulai
             </label>
-            <select
+            <NativeSelect
               id="start_level"
               name="start_level"
-              className="field"
               defaultValue={
                 data.find((person) => person.id === participant)?.start_level ??
                 data[0].start_level
@@ -117,7 +116,7 @@ export default async function NewAssessmentPage({
                   {level}
                 </option>
               ))}
-            </select>
+            </NativeSelect>
             <p className="mt-2 text-sm text-[#4d6156]">
               Pilih berdasarkan asesmen sebelumnya atau pengamatan relawan.
               Level dapat ditinjau lagi saat sesi berjalan.

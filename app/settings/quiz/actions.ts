@@ -79,7 +79,7 @@ export async function saveQuizItem(formData: FormData) {
   if (quiz.is_open) redirect(`${path}?error=close`)
   const values = {
     section: question.data.section, prompt: question.data.prompt, options,
-    answer: choices[question.data.answer_index - 1], is_required: formData.get("is_required") === "on",
+    answer: choices[question.data.answer_index - 1], is_required: true,
   }
   if (itemId?.success) {
     const { error } = await supabase.from("public_quiz_items").update({ ...values, ...(formData.get("keep_visual") === "on" ? {} : { visual: null }) })

@@ -4,6 +4,7 @@ import { Shell, Empty } from "@/components/product/shell"
 import { CopyLink } from "@/components/product/copy-link"
 import { createQuiz } from "./actions"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 
 export default async function QuizSettingsPage({
   searchParams,
@@ -66,9 +67,9 @@ export default async function QuizSettingsPage({
       >
         <label className="flex-1 text-sm font-semibold">
           Buat kuis baru
-          <input
+          <Input
             name="title"
-            className="field mt-2"
+            className="mt-2"
             defaultValue="Posttest Numerasi"
             minLength={2}
             maxLength={120}

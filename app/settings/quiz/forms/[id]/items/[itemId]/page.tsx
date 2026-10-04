@@ -4,6 +4,8 @@ import { requireAdmin } from "@/lib/auth"
 import { Shell } from "@/components/product/shell"
 import { deleteQuizItem, saveQuizItem } from "@/app/settings/quiz/actions"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 
 export default async function QuizItemPage({
   params,
@@ -24,7 +26,7 @@ export default async function QuizItemPage({
     ? { data: null, error: null }
     : await supabase
         .from("public_quiz_items")
-        .select("id,section,prompt,options,answer,is_required,visual")
+        .select("id,section,prompt,options,answer,visual")
         .eq("id", itemId)
         .eq("quiz_id", id)
         .eq("organization_id", membership.organization_id)
@@ -65,9 +67,9 @@ export default async function QuizItemPage({
         >
           <label className="block text-sm font-semibold">
             Bagian atau topik
-            <input
+            <Input
               name="section"
-              className="field mt-2"
+              className="mt-2"
               defaultValue={item?.section ?? "Numerasi"}
               maxLength={80}
               required
@@ -75,9 +77,9 @@ export default async function QuizItemPage({
           </label>
           <label className="block text-sm font-semibold">
             Pertanyaan
-            <textarea
+            <Textarea
               name="prompt"
-              className="field mt-2 min-h-28 resize-y"
+              className="mt-2 min-h-28"
               defaultValue={item?.prompt ?? ""}
               minLength={2}
               maxLength={500}
@@ -108,10 +110,9 @@ export default async function QuizItemPage({
                       Jawaban benar pilihan {index + 1}
                     </span>
                   </label>
-                  <input
+                  <Input
                     name={`option_${index + 1}`}
                     aria-label={`Pilihan ${index + 1}`}
-                    className="field"
                     defaultValue={options?.[index] ?? ""}
                     maxLength={80}
                     placeholder={`Pilihan ${index + 1}`}
@@ -120,15 +121,6 @@ export default async function QuizItemPage({
               ))}
             </div>
           </div>
-          <label className="flex items-center gap-3 text-sm font-medium">
-            <input
-              name="is_required"
-              type="checkbox"
-              defaultChecked={item?.is_required ?? false}
-              className="size-5 accent-[#2e5a4c]"
-            />
-            Wajib dijawab
-          </label>
           {item?.visual && (
             <label className="flex items-center gap-3 text-sm font-medium">
               <input

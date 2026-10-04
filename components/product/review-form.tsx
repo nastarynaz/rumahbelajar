@@ -3,6 +3,9 @@ import Link from "next/link"
 import { useState } from "react"
 import { finalizeAssessment, saveObservation } from "@/app/assessments/actions"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { NativeSelect } from "@/components/ui/native-select"
 
 export function ReviewForm({
   id,
@@ -125,8 +128,8 @@ export function ReviewForm({
           </fieldset>
           <label className="block text-sm font-semibold">
             Minat yang terlihat
-            <input
-              className="field mt-2"
+            <Input
+              className="mt-2"
               maxLength={300}
               value={motivator}
               onChange={(event) => setMotivator(event.target.value)}
@@ -134,8 +137,8 @@ export function ReviewForm({
           </label>
           <label className="block text-sm font-semibold">
             Catatan singkat
-            <textarea
-              className="field mt-2 min-h-24"
+            <Textarea
+              className="mt-2 min-h-24"
               maxLength={1000}
               value={note}
               onChange={(event) => setNote(event.target.value)}
@@ -166,10 +169,10 @@ export function ReviewForm({
         <input name="revision" type="hidden" value={revision} />
         <label className="block text-sm font-semibold">
           Alasan berhenti
-          <select
+          <NativeSelect
             name="stop_reason"
             required
-            className="field mt-2"
+            className="mt-2"
             value={reason}
             onChange={(event) => setReason(event.target.value)}
           >
@@ -183,26 +186,26 @@ export function ReviewForm({
             <option value="all_levels_passed">Semua level dicoba</option>
             <option value="time_limit">Waktu pertemuan selesai</option>
             <option value="assessor_decision">Keputusan relawan</option>
-          </select>
+          </NativeSelect>
         </label>
         {reason === "assessor_decision" && (
           <label className="block text-sm font-semibold">
             Alasan keputusan relawan
-            <textarea
+            <Textarea
               name="override_reason"
               required
               minLength={5}
               maxLength={1000}
-              className="field mt-2 min-h-20"
+              className="mt-2 min-h-20"
             />
           </label>
         )}
         <label className="block text-sm font-semibold">
           Fokus pertemuan berikutnya
-          <textarea
+          <Textarea
             name="summary_note"
             maxLength={2000}
-            className="field mt-2 min-h-20"
+            className="mt-2 min-h-20"
           />
         </label>
         <Button type="submit" className="w-full">
@@ -233,8 +236,8 @@ function Select({
   return (
     <label className="block text-sm font-semibold">
       {label}
-      <select
-        className="field mt-2"
+      <NativeSelect
+        className="mt-2"
         value={value}
         onChange={(event) => set(event.target.value)}
       >
@@ -242,7 +245,7 @@ function Select({
         {options.map((option) => (
           <option key={option}>{option}</option>
         ))}
-      </select>
+      </NativeSelect>
     </label>
   )
 }

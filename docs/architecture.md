@@ -21,7 +21,7 @@ Keputusan berikutnya: bila penggunaan offline penuh diperlukan, rancang penyimpa
 
 ## Kuis publik
 
-`/quiz/[slug]` mengambil soal milik tautan tanpa kunci jawaban melalui server. Admin mengedit satu soal per layar pada `/settings/quiz/forms/[id]` setelah tautan ditutup. Aksi publik memvalidasi nama lengkap, umur angka, pilihan, dan kunci idempotensi; database menghitung skor dalam `submit_public_quiz` sambil menyimpan snapshot soal pada kiriman. Tabel soal dan kiriman tidak memberikan hak baca kepada pengunjung anonim. Hasil kuis mandiri disimpan terpisah dari sesi relawan. Admin dapat menautkan kiriman ke peserta secara manual; pencocokan nama otomatis tidak digunakan.
+`/quiz/[slug]` mengambil soal milik tautan tanpa kunci jawaban melalui server. Admin mengedit satu soal per layar pada `/settings/quiz/forms/[id]` setelah tautan ditutup. Jawaban setiap soal diperiksa di server sebelum anak dapat lanjut. Aksi publik memvalidasi nama lengkap, umur angka, pilihan, dan kunci idempotensi; trigger database menolak kiriman yang belum menjawab seluruh soal dengan tepat. Database menyimpan snapshot soal pada kiriman. Tabel soal dan kiriman tidak memberikan hak baca kepada pengunjung anonim. Hasil kuis mandiri disimpan terpisah dari sesi relawan. Admin dapat menautkan kiriman ke peserta secara manual; pencocokan nama otomatis tidak digunakan.
 
 ## Super admin
 

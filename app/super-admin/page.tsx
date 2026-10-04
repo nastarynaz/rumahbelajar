@@ -1,4 +1,7 @@
 import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { NativeSelect } from "@/components/ui/native-select"
 import { requireSuperAdmin } from "@/lib/auth"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { Shell } from "@/components/product/shell"
@@ -27,14 +30,14 @@ export default async function SuperAdminPage({ searchParams }: { searchParams: P
     <div className="grid gap-5 lg:grid-cols-2">
       <form action={createOrganization} className="surface space-y-4 p-5">
         <div><h2 className="font-heading text-xl">Organisasi baru</h2><p className="mt-1 text-sm text-[#4d6156]">Buat ruang kerja baru untuk program atau cabang.</p></div>
-        <label className="block text-sm font-semibold">Nama organisasi<input name="name" className="field mt-2" minLength={2} maxLength={120} required placeholder="Contoh: Rumah Belajar Cabang Utara" /></label>
-        <button className="action">Buat organisasi</button>
+        <label className="block text-sm font-semibold">Nama organisasi<Input name="name" className="mt-2" minLength={2} maxLength={120} required placeholder="Contoh: Rumah Belajar Cabang Utara" /></label>
+        <Button type="submit">Buat organisasi</Button>
       </form>
       <form action={assignOrganizationAdmin} className="surface space-y-4 p-5">
         <div><h2 className="font-heading text-xl">Tetapkan admin</h2><p className="mt-1 text-sm text-[#4d6156]">Akun harus sudah ada di Supabase Authentication → Users.</p></div>
-        <label className="block text-sm font-semibold">Organisasi<select name="organization_id" className="field mt-2" required>{organizations.data?.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
-        <label className="block text-sm font-semibold">Email akun<input name="email" type="email" className="field mt-2" required placeholder="admin@contoh.org" /></label>
-        <button className="action" disabled={!organizations.data?.length}>Tetapkan admin</button>
+        <label className="block text-sm font-semibold">Organisasi<NativeSelect name="organization_id" className="mt-2" required>{organizations.data?.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</NativeSelect></label>
+        <label className="block text-sm font-semibold">Email akun<Input name="email" type="email" className="mt-2" required placeholder="admin@contoh.org" /></label>
+        <Button type="submit" disabled={!organizations.data?.length}>Tetapkan admin</Button>
       </form>
     </div>
     <section className="mt-8"><h2 className="mb-3 font-heading text-2xl">Organisasi</h2><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{organizations.data?.map((item) => <div key={item.id} className="surface p-5"><h3 className="font-heading text-xl">{item.name}</h3><p className="mt-2 text-sm text-[#4d6156]">{memberships.data?.filter((member) => member.organization_id === item.id).length ?? 0} admin</p></div>)}</div></section>

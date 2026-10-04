@@ -74,4 +74,7 @@ begin
     or not exists(select 1 from pg_trigger where tgrelid='public.public_quiz_attempts'::regclass and tgname='audit_quiz_link' and not tgisinternal) then
   raise exception 'Trigger integritas atau audit belum terpasang';
  end if;
+ if not exists(select 1 from pg_trigger where tgrelid='public.public_quiz_attempts'::regclass and tgname='require_quiz_mastery' and not tgisinternal) then
+  raise exception 'Aturan harus benar sebelum lanjut belum terpasang';
+ end if;
 end $$;

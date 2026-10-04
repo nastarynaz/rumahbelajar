@@ -4,6 +4,9 @@ import { useEffect, useRef, useState } from "react"
 import { saveResponse } from "@/app/assessments/actions"
 import { evaluateLevel, type Answer, type Level } from "@/lib/instrument"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { NativeSelect } from "@/components/ui/native-select"
 
 type Snapshot = { version: string; levels: Level[] }
 type SaveState = "saved" | "saving" | "offline" | "error"
@@ -340,9 +343,8 @@ export function AssessmentRunner({
                   >
                     Jawaban singkat, opsional
                   </label>
-                  <input
+                  <Input
                     id="response"
-                    className="field"
                     value={response}
                     onChange={(event) => {
                       setResponse(event.target.value)
@@ -359,9 +361,8 @@ export function AssessmentRunner({
                   >
                     Bantuan yang digunakan
                   </label>
-                  <select
+                  <NativeSelect
                     id="help"
-                    className="field"
                     value={help}
                     onChange={(event) => {
                       setHelp(event.target.value)
@@ -374,7 +375,7 @@ export function AssessmentRunner({
                     <option>Kartu titik / gambar</option>
                     <option>Coretan</option>
                     <option>Prompt verbal</option>
-                  </select>
+                  </NativeSelect>
                 </div>
               </div>
               <div className="mt-4">
@@ -384,9 +385,9 @@ export function AssessmentRunner({
                 >
                   Catatan soal, opsional
                 </label>
-                <textarea
+                <Textarea
                   id="note"
-                  className="field min-h-20"
+                  className="min-h-20"
                   value={note}
                   onChange={(event) => {
                     setNote(event.target.value)

@@ -2,8 +2,9 @@
 
 import Image from "next/image"
 import { useRef, useState, useTransition } from "react"
-import { submitQuiz } from "@/app/quiz/actions"
+import { checkQuizAnswer, submitQuiz } from "@/app/quiz/actions"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 
 type Question = {
   id: string
@@ -17,7 +18,7 @@ type Question = {
     right?: number
   } | null
   options: string[]
-  required: boolean
+  proof: string
 }
 
 export function PublicQuiz({
@@ -34,9 +35,7 @@ export function PublicQuiz({
   const [age, setAge] = useState("")
   const [answers, setAnswers] = useState<Record<string, string>>({})
   const [done, setDone] = useState(false)
-  const [score, setScore] = useState<{ correct: number; total: number } | null>(
-    null
-  )
+  const [checking, setChecking] = useState(false)
   const [error, setError] = useState("")
   const [speechError, setSpeechError] = useState("")
   const [pending, startTransition] = useTransition()
@@ -63,20 +62,31 @@ export function PublicQuiz({
     window.speechSynthesis.speak(utterance)
   }
 
-  function send() {
-    const firstMissing = questions.findIndex(
-      (item) => item.required && !answers[item.id]
-    )
-    if (firstMissing >= 0) {
-      setStep(firstMissing)
-      setError("Soal ini wajib dijawab sebelum dikirim.")
-      return
-    }
+  async function checkAndContinue() {
+    const value = answers[question.id]
+    if (!value || checking || pending) return
     setError("")
+    setChecking(true)
+    try {
+      const result = await checkQuizAnswer(slug, { questionId: question.id, value, proof: question.proof })
+      if (!result.correct) {
+        setError("Belum tepat. Coba hitung lagi, ya!")
+        return
+      }
+      if (step < questions.length - 1) goToStep(step + 1)
+      else send()
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Jawaban belum dapat diperiksa. Coba lagi.")
+    } finally {
+      setChecking(false)
+    }
+  }
+
+  function send() {
     if (!submissionKey.current) submissionKey.current = crypto.randomUUID()
     startTransition(async () => {
       try {
-        const result = await submitQuiz(slug, {
+        await submitQuiz(slug, {
           submissionKey: submissionKey.current,
           fullName: name,
           ageYears: Number(age),
@@ -86,7 +96,6 @@ export function PublicQuiz({
           })),
           website: "",
         })
-        setScore(result.score)
         setDone(true)
       } catch (cause) {
         setError(
@@ -123,12 +132,7 @@ export function PublicQuiz({
             >
               ✓
             </div>
-            <h1 className="mt-5 font-heading text-3xl">Kuis selesai!</h1>
-            {score && (
-              <p className="mt-4 font-heading text-4xl text-[#2e5a4c]">
-                {score.correct} dari {score.total} tepat
-              </p>
-            )}
+            <h1 className="mt-5 font-heading text-3xl">Kuis selesai, kamu hebat hari ini!</h1>
             <p className="mx-auto mt-3 max-w-md leading-7 text-[#4d6156]">
               Terima kasih sudah mencoba. Setiap soal membantu pendamping
               memahami cara belajarmu.
@@ -141,14 +145,14 @@ export function PublicQuiz({
             </p>
             <h1 className="mt-2 font-heading text-3xl">{title}</h1>
             <p className="mt-3 leading-7 text-[#4d6156]">
-              Ada {questions.length} soal singkat. Kerjakan satu per satu dengan
-              santai. Soal tanpa tanda wajib boleh dilewati.
+              Kerjakan satu soal setiap kali. Kalau belum tepat, coba lagi dengan
+              santai sampai kamu siap lanjut.
             </p>
             <div className="mt-7 grid gap-5">
               <label className="block text-sm font-semibold">
                 Nama lengkap
-                <input
-                  className="field mt-2"
+                <Input
+                  className="mt-2"
                   autoComplete="name"
                   maxLength={120}
                   value={name}
@@ -158,12 +162,12 @@ export function PublicQuiz({
               </label>
               <label className="block text-sm font-semibold">
                 Umur (tahun)
-                <input
+                <Input
                   type="number"
                   inputMode="numeric"
                   min={4}
                   max={99}
-                  className="field mt-2"
+                  className="mt-2"
                   value={age}
                   onChange={(event) => setAge(event.target.value)}
                   placeholder="Contoh: 10"
@@ -189,37 +193,11 @@ export function PublicQuiz({
           </section>
         ) : (
           <>
-            <div className="mt-8 flex items-center justify-between gap-3 text-sm font-semibold text-[#4d6156]">
-              <span>{question.section}</span>
-              <span>
-                {step + 1} / {questions.length}
-              </span>
-            </div>
-            <div
-              role="progressbar"
-              aria-label="Kemajuan kuis"
-              aria-valuenow={step + 1}
-              aria-valuemin={0}
-              aria-valuemax={questions.length}
-              className="mt-2 h-2 overflow-hidden rounded-full bg-[#f1dcb8]"
-            >
-              <div
-                className="h-full rounded-full bg-[#2e5a4c]"
-                style={{ width: `${((step + 1) / questions.length) * 100}%` }}
-              />
-            </div>
+            <p className="mt-8 text-sm font-semibold text-[#4d6156]">{question.section}</p>
             <section className="surface mt-5 p-6 sm:p-9">
-              <span className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-xl bg-[#f4dbad] px-3 text-sm font-bold text-[#704116]">
-                Soal {step + 1}
-              </span>
               <h1 className="mt-4 font-heading text-3xl leading-snug">
                 {question.prompt}
               </h1>
-              {question.required && (
-                <p className="mt-2 text-xs font-semibold text-[#a9432b]">
-                  Wajib dijawab
-                </p>
-              )}
               <Button variant="outline" className="mt-4" onClick={readQuestion}>
                 Dengarkan soal
               </Button>
@@ -276,16 +254,18 @@ export function PublicQuiz({
                     >
                       <input
                         type="radio"
+                        disabled={checking || pending}
                         className="size-5 shrink-0 accent-[#2e5a4c]"
                         name={question.id}
                         value={option}
                         checked={answers[question.id] === option}
-                        onChange={() =>
+                        onChange={() => {
+                          setError("")
                           setAnswers((previous) => ({
                             ...previous,
                             [question.id]: option,
                           }))
-                        }
+                        }}
                       />
                       <span className="min-w-0 break-words">
                         <span
@@ -309,30 +289,19 @@ export function PublicQuiz({
                 </p>
               )}
               <div className="mt-6 flex flex-wrap justify-between gap-3">
-                <Button variant="outline" onClick={() => goToStep(step - 1)}>
+                <Button variant="outline" disabled={checking || pending} onClick={() => goToStep(step - 1)}>
                   ← Kembali
                 </Button>
-                {step < questions.length - 1 ? (
-                  <Button
-                    onClick={() => goToStep(step + 1)}
-                    disabled={question.required && !answers[question.id]}
-                  >
-                    {answers[question.id] ? "Berikutnya" : "Lewati soal"} →
-                  </Button>
-                ) : (
-                  <Button
-                    disabled={
-                      pending || (question.required && !answers[question.id])
-                    }
-                    onClick={send}
-                  >
-                    {pending ? "Mengirim..." : "Kirim jawaban"}
-                  </Button>
-                )}
+                <Button
+                  disabled={checking || pending || !answers[question.id]}
+                  onClick={checkAndContinue}
+                >
+                  {checking ? "Memeriksa..." : pending ? "Mengirim..." : step < questions.length - 1 ? "Periksa dan lanjut →" : "Periksa dan kirim"}
+                </Button>
               </div>
             </section>
             <p className="mt-5 text-center text-xs text-[#4d6156]">
-              Jawaban belum dikirim sebelum tombol “Kirim jawaban” ditekan.
+              Jawaban disimpan setelah soal terakhir berhasil dikirim.
             </p>
           </>
         )}

@@ -5,6 +5,7 @@ import { Shell } from "@/components/product/shell"
 import { CopyLink } from "@/components/product/copy-link"
 import { saveQuizTitle, toggleQuizOpen } from "@/app/settings/quiz/actions"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 
 export default async function QuizBuilderPage({
   params,
@@ -24,7 +25,7 @@ export default async function QuizBuilderPage({
       .maybeSingle(),
     supabase
       .from("public_quiz_items")
-      .select("id,sort_order,section,prompt,options,is_required")
+      .select("id,sort_order,section,prompt,options")
       .eq("quiz_id", id)
       .eq("organization_id", membership.organization_id)
       .order("sort_order"),
@@ -85,9 +86,9 @@ export default async function QuizBuilderPage({
                 <input type="hidden" name="quiz_id" value={quiz.id} />
                 <label className="flex-1 text-sm font-semibold">
                   Judul
-                  <input
+                  <Input
                     name="title"
-                    className="field mt-2"
+                    className="mt-2"
                     defaultValue={quiz.title}
                     minLength={2}
                     maxLength={120}
@@ -170,7 +171,7 @@ export default async function QuizBuilderPage({
                   <span className="min-w-0 flex-1">
                     <span className="block text-xs font-bold tracking-[.12em] text-[#a9432b] uppercase">
                       {item.section}
-                      {item.is_required ? " · Wajib" : ""}
+                      {" · Jawab tepat untuk lanjut"}
                     </span>
                     <strong className="mt-1 block truncate font-semibold">
                       {item.prompt}

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation"
 import Link from "next/link"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { PublicQuiz } from "@/components/product/public-quiz"
+import { quizAnswerProof } from "@/lib/quiz-proof"
 
 export const dynamic = "force-dynamic"
 
@@ -17,7 +18,7 @@ export default async function QuizPage({ params }: { params: Promise<{ slug: str
   const { data: quiz, error: quizError } = await admin.from("public_quizzes").select("id,title,is_open").eq("slug", slug).maybeSingle()
   if (quizError) { console.error("quiz_read_failed", quizError.code); return <QuizUnavailable slug={slug} /> }
   if (!quiz?.is_open) notFound()
-  const { data: questions, error } = await admin.from("public_quiz_items").select("code,section,prompt,visual,options,is_required,sort_order").eq("quiz_id", quiz.id).order("sort_order")
+  const { data: questions, error } = await admin.from("public_quiz_items").select("code,section,prompt,visual,options,answer,sort_order").eq("quiz_id", quiz.id).order("sort_order")
   if (error || !questions?.length) { if (error) console.error("quiz_items_read_failed", error.code); return <QuizUnavailable slug={slug} /> }
-  return <PublicQuiz slug={slug} title={quiz.title} questions={questions.map((question) => ({ id: question.code, section: question.section, prompt: question.prompt, visual: question.visual as { symbol?: string; count?: number; groups?: number; left?: number; right?: number } | null, options: question.options as string[], required: question.is_required }))} />
+  return <PublicQuiz slug={slug} title={quiz.title} questions={questions.map((question) => ({ id: question.code, section: question.section, prompt: question.prompt, visual: question.visual as { symbol?: string; count?: number; groups?: number; left?: number; right?: number } | null, options: question.options as string[], proof: quizAnswerProof(slug, question.code, question.answer) }))} />
 }
