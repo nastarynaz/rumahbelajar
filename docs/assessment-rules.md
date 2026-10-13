@@ -1,4 +1,25 @@
-# Aturan asesmen Tangga Angka v1
+# Aturan asesmen Tangga Angka
+
+## Versi 2 · Pertemuan kedua
+
+Sesi baru memakai `tangga-angka-v2`. Setiap tingkat A–I memiliki tiga soal inti. Dua jawaban benar **tanpa bantuan relawan** cukup untuk melewati tingkat. Anak boleh memakai jari, kancing, atau gambar sendiri; alat dicatat tetapi tidak mengurangi skor mandiri. Dua soal yang belum tepat dalam satu tingkat menandai batas sementara; relawan membantu anak menyelesaikan soal terakhir dan menutup sesi dengan berhasil. Jawaban awal, pilihan salah, dan jawaban setelah bantuan dicatat sebagai urutan peristiwa. Status `assisted` tidak dihitung sebagai lulus mandiri.
+
+| Tingkat | Fokus |
+| --- | --- |
+| A | Membilang benda |
+| B | Angka 1–9 dan pasangan titik |
+| C | Bilangan 10–99 dan nilai tempat |
+| D1 | Tambah-kurang dasar |
+| D2 | Menyimpan dan meminjam |
+| E | Perkalian |
+| F | Pembagian dan soal cerita |
+| G | Ratusan dan nilai tempat |
+| H | Kali-bagi lanjutan, termasuk sisa |
+| I | Soal cerita dua langkah dan pecahan sederhana |
+
+Asesmen ulang mulai dua tingkat di bawah hasil terakhir. Sesi lama tetap memakai snapshot `tangga-angka-v1`. Kuis Misi terpisah berisi tiga soal pemanasan dan dua soal dari materi hari itu; skor 4/5 adalah target pengajaran, bukan hasil tes level. Penggunaan bantuan dan audio dicatat terpisah.
+
+## Versi 1 · Pertemuan pertama
 
 | Level | Soal inti | Ambang |
 | --- | --- | --- |

@@ -111,7 +111,7 @@ export default async function NewAssessmentPage({
                 data[0].start_level
               }
             >
-              {["A", "B", "C", "D1", "D2", "E", "F"].map((level) => (
+              {["A", "B", "C", "D1", "D2", "E", "F", "G", "H", "I"].map((level) => (
                 <option key={level} value={level}>
                   {level}
                 </option>
@@ -119,7 +119,7 @@ export default async function NewAssessmentPage({
             </NativeSelect>
             <p className="mt-2 text-sm text-[#4d6156]">
               Pilih berdasarkan asesmen sebelumnya atau pengamatan relawan.
-              Level dapat ditinjau lagi saat sesi berjalan.
+              Pada asesmen ulang, sistem mulai dua tingkat di bawah hasil terakhir. Level dapat ditinjau lagi saat sesi berjalan.
             </p>
           </div>
           <Button type="submit" className="w-full sm:w-auto">

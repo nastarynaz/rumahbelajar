@@ -4,7 +4,7 @@ import { z } from "zod"
 import { requireAdmin } from "@/lib/auth"
 
 export async function addParticipant(formData: FormData) {
-  const input = z.object({ display_name: z.string().trim().min(1).max(80), code: z.string().trim().max(40), start_level: z.enum(["A","B","C","D1","D2","E","F"]), assessor_id: z.uuid().optional().or(z.literal("")) }).parse(Object.fromEntries(formData))
+  const input = z.object({ display_name: z.string().trim().min(1).max(80), code: z.string().trim().max(40), start_level: z.enum(["A","B","C","D1","D2","E","F","G","H","I"]), assessor_id: z.uuid().optional().or(z.literal("")) }).parse(Object.fromEntries(formData))
   const { supabase, membership } = await requireAdmin()
   const { data, error } = await supabase.from("participants").insert({ organization_id: membership.organization_id, display_name: input.display_name, code: input.code || null, start_level: input.start_level }).select("id").single()
   if (error || !data) throw new Error("Peserta belum dapat ditambahkan.")

@@ -1,5 +1,5 @@
-export type ResponseStatus = "correct" | "incorrect" | "skipped" | "not_asked"
-export type LevelCode = "A" | "B" | "C" | "D1" | "D2" | "E" | "F"
+export type ResponseStatus = "correct" | "assisted" | "incorrect" | "skipped" | "not_asked"
+export type LevelCode = "A" | "B" | "C" | "D1" | "D2" | "E" | "F" | "G" | "H" | "I"
 export type Question = {
   id: string
   level: LevelCode
@@ -12,41 +12,57 @@ export type Question = {
 }
 export type Level = { code: LevelCode; title: string; threshold: number; questions: Question[] }
 
-export const instrumentVersion = "tangga-angka-v1"
+export const instrumentVersion = "tangga-angka-v2"
 export const levels: Level[] = [
-  { code: "A", title: "Menghitung benda", threshold: 2, questions: [
-    { id: "a-1", level: "A", prompt: "Ayo hitung bersama dari 1 sampai 10.", answer: "1–10", role: "practice", kind: "activity" },
-    { id: "a-2", level: "A", prompt: "Ada berapa bintang?", answer: "7", role: "core", kind: "count", visual: { symbol: "★", count: 7 } },
-    { id: "a-3", level: "A", prompt: "Ambilkan 5 benda.", answer: "5", role: "core", kind: "activity" },
+  { code: "A", title: "Membilang benda", threshold: 2, questions: [
+    { id: "a2-1", level: "A", prompt: "Ambilkan 2 kancing.", answer: "2", role: "core", kind: "activity" },
+    { id: "a2-2", level: "A", prompt: "Ada berapa bintang?", answer: "3", role: "core", kind: "count", visual: { symbol: "★", count: 3 } },
+    { id: "a2-3", level: "A", prompt: "Ambilkan 5 kancing.", answer: "5", role: "core", kind: "activity" },
   ] },
-  { code: "B", title: "Angka 1–9", threshold: 4, questions: [
-    ...[3, 7, 5, 9, 2].map((n, i): Question => ({ id: `b-${i + 1}`, level: "B", prompt: "Angka berapa ini?", answer: String(n), role: "core", kind: "recognize", visual: { symbol: String(n), count: 1 }, help: "Kartu titik boleh digunakan untuk mencocokkan." })),
-    ...[4, 8].map((n, i): Question => ({ id: `b-v${i + 1}`, level: "B", prompt: "Angka berapa ini?", answer: String(n), role: "verification", kind: "recognize", visual: { symbol: String(n), count: 1 } })),
+  { code: "B", title: "Angka 1–9", threshold: 2, questions: [
+    { id: "b2-1", level: "B", prompt: "Tunjuk angka 1.", answer: "1", role: "core", kind: "recognize", visual: { symbol: "1", count: 1 } },
+    { id: "b2-2", level: "B", prompt: "Pasangkan angka 2 dengan dua titik.", answer: "2", role: "core", kind: "activity" },
+    { id: "b2-3", level: "B", prompt: "Pasangkan angka 3 dengan tiga titik.", answer: "3", role: "core", kind: "activity" },
   ] },
-  { code: "C", title: "Angka 10–99", threshold: 4, questions: [
-    ...[14, 27, 60, 83, 51].map((n, i): Question => ({ id: `c-${i + 1}`, level: "C", prompt: "Angka berapa ini?", answer: String(n), role: "core", kind: "recognize", visual: { symbol: String(n), count: 1 } })),
-    { id: "c-v1", level: "C", prompt: "Mana yang lebih besar, 38 atau 83?", answer: "83", role: "verification", kind: "compare" },
+  { code: "C", title: "Bilangan 10–99", threshold: 2, questions: [
+    { id: "c2-1", level: "C", prompt: "Mana lebih besar, 47 atau 74?", answer: "74", role: "core", kind: "compare" },
+    { id: "c2-2", level: "C", prompt: "Angka sesudah 39 berapa?", answer: "40", role: "core", kind: "recognize" },
+    { id: "c2-3", level: "C", prompt: "3 puluhan dan 5 satuan jadi berapa?", answer: "35", role: "core", kind: "activity" },
   ] },
   { code: "D1", title: "Tambah dan kurang dasar", threshold: 2, questions: [
-    { id: "d1-1", level: "D1", prompt: "6 + 3 = ?", answer: "9", role: "core", kind: "arithmetic", help: "Jari atau benda hitung boleh digunakan." },
-    { id: "d1-2", level: "D1", prompt: "9 − 4 = ?", answer: "5", role: "core", kind: "arithmetic" },
-    { id: "d1-v1", level: "D1", prompt: "5 + 4 = ?", answer: "9", role: "verification", kind: "arithmetic" },
-    { id: "d1-v2", level: "D1", prompt: "8 − 3 = ?", answer: "5", role: "verification", kind: "arithmetic" },
+    { id: "d12-1", level: "D1", prompt: "23 + 14 = ?", answer: "37", role: "core", kind: "arithmetic" },
+    { id: "d12-2", level: "D1", prompt: "46 − 15 = ?", answer: "31", role: "core", kind: "arithmetic" },
+    { id: "d12-3", level: "D1", prompt: "48 − 13 = ?", answer: "35", role: "core", kind: "arithmetic" },
   ] },
   { code: "D2", title: "Menyimpan dan meminjam", threshold: 2, questions: [
-    { id: "d2-1", level: "D2", prompt: "27 + 15 = ?", answer: "42", role: "core", kind: "arithmetic", help: "Coretan di kertas boleh digunakan." },
-    { id: "d2-2", level: "D2", prompt: "42 − 17 = ?", answer: "25", role: "core", kind: "arithmetic" },
-    { id: "d2-v1", level: "D2", prompt: "53 − 26 = ?", answer: "27", role: "verification", kind: "arithmetic" },
+    { id: "d22-1", level: "D2", prompt: "42 − 17 = ?", answer: "25", role: "core", kind: "arithmetic" },
+    { id: "d22-2", level: "D2", prompt: "35 − 18 = ?", answer: "17", role: "core", kind: "arithmetic" },
+    { id: "d22-3", level: "D2", prompt: "38 + 45 = ?", answer: "83", role: "core", kind: "arithmetic" },
   ] },
   { code: "E", title: "Perkalian", threshold: 2, questions: [
-    { id: "e-1", level: "E", prompt: "3 × 4 = ?", answer: "12", role: "core", kind: "arithmetic", visual: { symbol: "●", count: 4, groups: 3 } },
-    { id: "e-2", level: "E", prompt: "6 × 7 = ?", answer: "42", role: "core", kind: "arithmetic" },
-    { id: "e-3", level: "E", prompt: "Ada 4 tim bola. Tiap tim 5 anak. Semuanya berapa anak?", answer: "20", role: "core", kind: "story" },
+    { id: "e2-1", level: "E", prompt: "3 × 4 = ?", answer: "12", role: "core", kind: "arithmetic", visual: { symbol: "●", count: 4, groups: 3 } },
+    { id: "e2-2", level: "E", prompt: "5 × 3 = ?", answer: "15", role: "core", kind: "arithmetic" },
+    { id: "e2-3", level: "E", prompt: "2 × 6 = ?", answer: "12", role: "core", kind: "arithmetic" },
   ] },
   { code: "F", title: "Pembagian dan cerita", threshold: 2, questions: [
-    { id: "f-1", level: "F", prompt: "12 ÷ 3 = ?", answer: "4", role: "core", kind: "arithmetic", visual: { symbol: "●", count: 4, groups: 3 } },
-    { id: "f-2", level: "F", prompt: "56 ÷ 7 = ?", answer: "8", role: "core", kind: "arithmetic" },
-    { id: "f-3", level: "F", prompt: "Ada 3 kantong berisi 6 kelereng. Lima diberikan ke teman. Berapa sisanya?", answer: "13", role: "core", kind: "story" },
+    { id: "f2-1", level: "F", prompt: "12 ÷ 3 = ?", answer: "4", role: "core", kind: "arithmetic" },
+    { id: "f2-2", level: "F", prompt: "15 ÷ 5 = ?", answer: "3", role: "core", kind: "arithmetic" },
+    { id: "f2-3", level: "F", prompt: "20 kue dibagi rata ke 4 piring. Tiap piring berapa?", answer: "5", role: "core", kind: "story" },
+  ] },
+  { code: "G", title: "Ratusan dan nilai tempat", threshold: 2, questions: [
+    { id: "g-1", level: "G", prompt: "Pada 345, angka ratusannya berapa?", answer: "3", role: "core", kind: "recognize" },
+    { id: "g-2", level: "G", prompt: "125 + 248 = ?", answer: "373", role: "core", kind: "arithmetic" },
+    { id: "g-3", level: "G", prompt: "300 − 145 = ?", answer: "155", role: "core", kind: "arithmetic" },
+  ] },
+  { code: "H", title: "Kali dan bagi lanjutan", threshold: 2, questions: [
+    { id: "h-1", level: "H", prompt: "14 × 3 = ?", answer: "42", role: "core", kind: "arithmetic" },
+    { id: "h-2", level: "H", prompt: "23 × 4 = ?", answer: "92", role: "core", kind: "arithmetic" },
+    { id: "h-3", level: "H", prompt: "17 ÷ 5 = ? Sebutkan sisanya.", answer: "3 sisa 2", role: "core", kind: "arithmetic" },
+  ] },
+  { code: "I", title: "Cerita dua langkah dan pecahan", threshold: 2, questions: [
+    { id: "i-1", level: "I", prompt: "3 buku masing-masing 4 ribu. Bayar 20 ribu. Kembalinya?", answer: "8 ribu", role: "core", kind: "story" },
+    { id: "i-2", level: "I", prompt: "Setengah dari 12 berapa?", answer: "6", role: "core", kind: "story" },
+    { id: "i-3", level: "I", prompt: "Seperempat dari 20 berapa?", answer: "5", role: "core", kind: "story" },
   ] },
 ]
 
@@ -55,10 +71,13 @@ export type Answer = { question_id: string; status: ResponseStatus; response?: s
 
 export function evaluateLevel(level: Level, answers: Answer[]) {
   const core = level.questions.filter((question) => question.role === "core")
-  const score = core.filter((question) => answers.find((answer) => answer.question_id === question.id)?.status === "correct").length
+  const score = core.filter((question) => {
+    const answer = answers.find((item) => item.question_id === question.id)
+    return answer?.status === "correct"
+  }).length
   const asked = core.filter((question) => {
     const status = answers.find((answer) => answer.question_id === question.id)?.status
-    return status === "correct" || status === "incorrect"
+    return status === "correct" || status === "assisted" || status === "incorrect"
   }).length
   return { score, total: core.length, threshold: level.threshold, asked, passed: score >= level.threshold, complete: core.every((question) => answers.some((answer) => answer.question_id === question.id && answer.status !== "not_asked")) }
 }

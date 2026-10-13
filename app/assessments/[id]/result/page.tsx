@@ -40,6 +40,14 @@ export default async function ResultPage({
       note: row.note ?? undefined,
     })
   )
+  const events = session.assessment_answer_events as {
+    question_code: string; status: Answer["status"]; response: string | null; help: string | null; created_at: string
+  }[]
+  const observation = session.assessment_observations?.[0]
+  const metrics = observation?.day1_metrics as {
+    engagement?: { opener?: number | null; desk?: number | null; game?: number | null; tablet?: number | null }
+    focus_minutes?: number | null; comfort?: string; peer_help?: string; tablet_use?: string
+  } | undefined
   return (
     <Shell
       title="Hasil sesi"
@@ -104,6 +112,17 @@ export default async function ResultPage({
                       Ambang {score.threshold} ·{" "}
                       {score.passed ? "Terpenuhi" : "Belum terpenuhi"}
                     </p>
+                    <ul className="mt-3 divide-y divide-[#eadfce] text-sm">
+                      {level.questions.filter((question) => answers.some((answer) => answer.question_id === question.id)).map((question) => {
+                        const answer = answers.find((item) => item.question_id === question.id)!
+                        const attempts = events.filter((event) => event.question_code === question.id).sort((a, b) => a.created_at.localeCompare(b.created_at))
+                        return <li key={question.id} className="py-2">
+                          <p className="font-semibold">{question.prompt}</p>
+                          <p className="text-[#4d6156]">{answer.status === "correct" ? "Benar sendiri" : answer.status === "assisted" ? "Dibantu Kakak" : answer.status === "incorrect" ? "Belum tepat" : "Dilewati"}{answer.help ? ` · Bantuan: ${answer.help}` : ""}</p>
+                          {attempts.length > 0 && <p className="text-[#4d6156]">Urutan jawaban: {attempts.map((attempt) => `${attempt.response || "tanpa jawaban tertulis"} (${attempt.status === "assisted" ? "dibantu" : attempt.status === "incorrect" ? "belum tepat" : attempt.status === "correct" ? "benar" : "dilewati"})`).join(" → ")}</p>}
+                        </li>
+                      })}
+                    </ul>
                   </div>
                 )
               })}
@@ -120,6 +139,13 @@ export default async function ResultPage({
           </p>
         </aside>
       </div>
+      {metrics && Object.keys(metrics).length > 0 && <section className="surface mt-6 p-5">
+        <h2 className="font-heading text-xl">Pengamatan sesi</h2>
+        <p className="mt-2 text-sm text-[#4d6156]">Semangat (1–3): Kakak Bilang {metrics.engagement?.opener ?? "—"} · Meja Belajar {metrics.engagement?.desk ?? "—"} · Permainan {metrics.engagement?.game ?? "—"} · Tablet {metrics.engagement?.tablet ?? "—"}</p>
+        <p className="mt-1 text-sm text-[#4d6156]">Lama fokus: {metrics.focus_minutes ?? "—"} menit · {metrics.comfort || "Kenyamanan belum dicatat"}</p>
+        {metrics.peer_help && <p className="mt-1 text-sm text-[#4d6156]">Membantu teman: {metrics.peer_help}</p>}
+        {metrics.tablet_use && <p className="mt-1 text-sm text-[#4d6156]">Tablet: {metrics.tablet_use}</p>}
+      </section>}
     </Shell>
   )
 }

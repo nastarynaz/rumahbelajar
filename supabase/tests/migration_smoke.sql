@@ -9,8 +9,8 @@ begin
       'assessor_assignments','instruments','instrument_levels','questions',
       'assessment_sessions','assessment_responses','assessment_observations','audit_logs',
       'public_quizzes','public_quiz_questions','public_quiz_attempts','public_quiz_rate_limits',
-      'platform_admins','public_quiz_items'
-     ])) <> 19 then raise exception 'Ada tabel aplikasi yang belum dibuat'; end if;
+      'platform_admins','public_quiz_items','assessment_answer_events','mission_attempts'
+     ])) <> 21 then raise exception 'Ada tabel aplikasi yang belum dibuat'; end if;
  select string_agg(c.relname, ', ') into missing_rls
  from pg_class c join pg_namespace n on n.oid=c.relnamespace
  where n.nspname='public' and c.relname = any(array[
@@ -18,7 +18,7 @@ begin
   'assessor_assignments','instruments','instrument_levels','questions',
   'assessment_sessions','assessment_responses','assessment_observations','audit_logs',
   'public_quizzes','public_quiz_questions','public_quiz_attempts','public_quiz_rate_limits',
-  'platform_admins','public_quiz_items'
+  'platform_admins','public_quiz_items','assessment_answer_events','mission_attempts'
  ]) and c.relkind='r' and not c.relrowsecurity;
  if missing_rls is not null then raise exception 'RLS belum aktif pada: %',missing_rls; end if;
  if (select count(*) from public.instrument_levels l join public.instruments i on i.id=l.instrument_id where i.version='tangga-angka-v1')<>7 then
@@ -26,6 +26,10 @@ begin
  end if;
  if (select count(*) from public.questions q join public.instruments i on i.id=q.instrument_id where i.version='tangga-angka-v1')<>29 then
   raise exception 'Soal Tangga Angka tidak lengkap';
+ end if;
+ if (select count(*) from public.instrument_levels l join public.instruments i on i.id=l.instrument_id where i.version='tangga-angka-v2')<>10
+   or (select count(*) from public.questions q join public.instruments i on i.id=q.instrument_id where i.version='tangga-angka-v2')<>30 then
+  raise exception 'Instrumen Tangga Angka pertemuan kedua tidak lengkap';
  end if;
  if (select count(*) from public.public_quiz_questions where version='kuis-numerasi-v1')<>12 then
   raise exception 'Soal kuis mandiri tidak lengkap';
@@ -45,11 +49,13 @@ begin
   raise exception 'Ada kunci soal formulir di luar pilihan';
  end if;
  if has_table_privilege('anon','public.public_quiz_attempts','SELECT')
+    or has_table_privilege('anon','public.mission_attempts','SELECT')
     or has_table_privilege('anon','public.public_quiz_questions','SELECT')
     or has_table_privilege('anon','public.public_quiz_items','SELECT')
     or has_table_privilege('authenticated','public.platform_admins','INSERT')
     or has_table_privilege('authenticated','public.public_quiz_questions','SELECT')
     or has_table_privilege('authenticated','public.assessment_responses','INSERT')
+    or has_table_privilege('authenticated','public.assessment_answer_events','INSERT')
     or has_table_privilege('authenticated','public.assessment_sessions','INSERT')
     or has_column_privilege('authenticated','public.public_quizzes','version','UPDATE')
     or has_column_privilege('authenticated','public.public_quizzes','slug','UPDATE')

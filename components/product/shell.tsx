@@ -52,6 +52,7 @@ export function Shell({
             <Button render={<Link href="/reports" />} variant="ghost" size="sm">
               Laporan
             </Button>
+            <Button render={<Link href="/guide/day1" />} variant="ghost" size="sm">Panduan</Button>
             {admin && (
               <>
                 <Button

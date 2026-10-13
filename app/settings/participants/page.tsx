@@ -41,7 +41,7 @@ export default async function AddParticipantPage() {
                 <SelectValue />
               </SelectButton>
               <SelectPopup>
-                {["A", "B", "C", "D1", "D2", "E", "F"].map((code) => (
+                {["A", "B", "C", "D1", "D2", "E", "F", "G", "H", "I"].map((code) => (
                   <SelectItem key={code} value={code}>
                     {code}
                   </SelectItem>

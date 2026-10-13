@@ -8,14 +8,28 @@ describe("aturan Tangga Angka", () => {
     expect(evaluateLevel(level, correct(core.slice(0, level.threshold).map((q) => q.id))).passed).toBe(true)
     expect(evaluateLevel(level, correct(core.slice(0, level.threshold - 1).map((q) => q.id))).passed).toBe(false)
   })
-  it("verifikasi C tidak mengubah ambang 4 dari 5", () => {
-    expect(evaluateLevel(levels[2], correct(["c-1","c-2","c-3","c-v1"]).concat({question_id:"c-4",status:"skipped"})).passed).toBe(false)
+  it("setiap tingkat baru memakai tiga soal dan ambang dua mandiri", () => {
+    for (const level of levels) {
+      expect(level.questions.filter((question) => question.role === "core")).toHaveLength(3)
+      expect(level.threshold).toBe(2)
+    }
   })
   it("skipped dan not_asked tidak dihitung benar", () => {
-    expect(evaluateLevel(levels[0], [{question_id:"a-2",status:"skipped"},{question_id:"a-3",status:"not_asked"}]).score).toBe(0)
+    expect(evaluateLevel(levels[0], [{question_id:"a2-2",status:"skipped"},{question_id:"a2-3",status:"not_asked"}]).score).toBe(0)
+  })
+  it("jawaban dibantu tidak dihitung sebagai lulus mandiri", () => {
+    expect(evaluateLevel(levels[0], [
+      { question_id: "a2-1", status: "correct" },
+      { question_id: "a2-2", status: "assisted", help: "Dibantu Kakak" },
+      { question_id: "a2-3", status: "incorrect", help: "Benda konkret" },
+    ]).passed).toBe(false)
+    expect(evaluateLevel(levels[0], [
+      { question_id: "a2-1", status: "correct" },
+      { question_id: "a2-2", status: "correct", help: "Benda konkret" },
+    ]).passed).toBe(true)
   })
   it("hasil adalah level tertinggi yang terbukti, bukan terakhir dibuka", () => {
-    expect(highestPassed(instrumentSnapshot, correct(["a-2","a-3","b-1","b-2","b-3","b-4","c-1"]))).toBe("B")
+    expect(highestPassed(instrumentSnapshot, correct(["a2-1","a2-2","b2-1","b2-2","c2-1"]))).toBe("B")
     expect(groupForLevel("B")).toBe("awal")
     expect(groupForLevel("D1")).toBe("tengah")
     expect(groupForLevel("E")).toBe("lanjut")

@@ -11,7 +11,7 @@ export default async function ParticipantPage({
 }) {
   const { id } = await params
   const { supabase, membership } = await requireUser()
-  const [person, history, quizzes] = await Promise.all([
+  const [person, history, quizzes, missions] = await Promise.all([
     supabase
       .from("participants")
       .select("id,display_name,code,start_level,programs(name)")
@@ -29,23 +29,27 @@ export default async function ParticipantPage({
           .eq("participant_id", id)
           .order("created_at", { ascending: false })
       : Promise.resolve({ data: [], error: null }),
+    supabase.from("mission_attempts")
+      .select("id,created_at,level,independent_correct,assisted_count,answers")
+      .eq("participant_id", id).order("created_at", { ascending: false }),
   ])
   if (!person.data) notFound()
-  if (history.error || quizzes.error)
+  if (history.error || quizzes.error || missions.error)
     throw new Error("Riwayat belum dapat dimuat.")
   return (
     <Shell
       title={person.data.display_name}
       eyebrow="Perkembangan peserta"
       admin={membership.role === "admin"}
-      action={
+      action={<div className="flex flex-wrap gap-2">
+        <Button render={<Link href={`/mission/${id}`} />} variant="outline">Kuis Misi</Button>
         <Button
           render={<Link href={`/assessments/new?participant=${id}`} />}
           variant="default"
         >
           Sesi baru
         </Button>
-      }
+      </div>}
     >
       <div className="grid gap-6 lg:grid-cols-[1fr_18rem]">
         <section>
@@ -109,6 +113,19 @@ export default async function ParticipantPage({
           </dl>
         </aside>
       </div>
+      <section className="mt-7">
+        <h2 className="mb-3 font-heading text-2xl">Kuis Misi</h2>
+        {missions.data?.length ? <div className="surface divide-y divide-[#eadfce]">
+          {missions.data.map((mission) => <div key={mission.id} className="p-5">
+            <p className="font-semibold">{new Date(mission.created_at).toLocaleDateString("id-ID")} · Materi {mission.level}</p>
+            <p className="mt-1 text-sm text-[#4d6156]">{mission.independent_correct}/5 benar sendiri · {mission.assisted_count} soal dibantu</p>
+            <details className="mt-3 text-sm"><summary className="cursor-pointer font-semibold">Lihat pilihan jawaban</summary>
+              <ol className="mt-3 list-inside list-decimal space-y-1 text-[#4d6156]">{(mission.answers as { selected: string; correct: boolean; assisted: boolean; audio_uses: number }[]).map((answer, index) => <li key={index}>Pilihan {answer.selected} · {answer.correct ? "tepat" : "belum tepat"}{answer.assisted ? " · dibantu" : ""}{answer.audio_uses ? ` · audio ${answer.audio_uses}×` : ""}</li>)}</ol>
+            </details>
+          </div>)}
+        </div> : <p className="surface p-5 text-sm text-[#4d6156]">Belum ada Kuis Misi.</p>}
+        <p className="mt-2 text-xs text-[#4d6156]">Panduan relawan: pertimbangkan langkah berikutnya setelah 4 dari 5 benar sendiri pada dua pertemuan berturut-turut. Jika 2 atau kurang, gunakan soal lebih mudah dan lebih banyak benda.</p>
+      </section>
       {membership.role === "admin" &&
         quizzes.data &&
         quizzes.data.length > 0 && (

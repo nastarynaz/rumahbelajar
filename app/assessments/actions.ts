@@ -4,18 +4,29 @@ import { revalidatePath } from "next/cache"
 import { z } from "zod"
 import { requireUser } from "@/lib/auth"
 import { getSession } from "@/lib/data"
+import { levels } from "@/lib/instrument"
 
-const level = z.enum(["A","B","C","D1","D2","E","F"])
+const level = z.enum(["A","B","C","D1","D2","E","F","G","H","I"])
 const sessionType = z.enum(["baseline","posttest","reassessment"])
-const status = z.enum(["correct","incorrect","skipped","not_asked"])
+const status = z.enum(["correct","assisted","incorrect","skipped","not_asked"])
 
 export async function createAssessment(formData: FormData) {
   const input = z.object({ participant_id: z.uuid(), type: sessionType, assessed_on: z.iso.date(), start_level: level, idempotency_key: z.uuid() }).safeParse(Object.fromEntries(formData))
   if (!input.success) throw new Error("Data sesi tidak valid.")
   const { supabase } = await requireUser()
+  let initialLevel = input.data.start_level
+  if (input.data.type === "reassessment") {
+    const { data: latest, error: latestError } = await supabase.from("assessment_sessions")
+      .select("highest_passed_level").eq("participant_id", input.data.participant_id)
+      .eq("status", "completed").not("highest_passed_level", "is", null)
+      .order("completed_at", { ascending: false }).limit(1).maybeSingle()
+    if (latestError) throw new Error("Riwayat peserta belum dapat dibaca.")
+    const index = levels.findIndex((item) => item.code === latest?.highest_passed_level)
+    if (index >= 0) initialLevel = levels[Math.max(0, index - 2)].code
+  }
   const { data: id, error } = await supabase.rpc("create_assessment", {
     target_participant: input.data.participant_id, session_type: input.data.type, assessment_date: input.data.assessed_on,
-    initial_level: input.data.start_level, request_key: input.data.idempotency_key,
+    initial_level: initialLevel, request_key: input.data.idempotency_key,
   })
   if (error || !id) throw new Error(error?.message ?? "Sesi gagal dibuat.")
   redirect(`/assessments/${id}/run`)
@@ -35,7 +46,8 @@ export async function saveResponse(sessionId: string, payload: unknown, expected
 }
 
 export async function saveObservation(sessionId: string, payload: unknown) {
-  const input = z.object({ counting_method: z.string().max(80).nullable(), explanation: z.string().max(80).nullable(), difficulty_response: z.string().max(80).nullable(), tools: z.array(z.string().max(80)).max(8), motivator: z.string().max(300), note: z.string().max(1000) }).parse(payload)
+  const score = z.union([z.literal(1), z.literal(2), z.literal(3)]).nullable()
+  const input = z.object({ counting_method: z.string().max(80).nullable(), explanation: z.string().max(80).nullable(), difficulty_response: z.string().max(80).nullable(), tools: z.array(z.string().max(80)).max(8), motivator: z.string().max(300), note: z.string().max(1000), day1_metrics: z.object({ engagement: z.object({ opener: score, desk: score, game: score, tablet: score }), focus_minutes: z.number().int().min(0).max(90).nullable(), comfort: z.string().max(80), peer_help: z.string().max(120), tablet_use: z.string().max(120) }) }).parse(payload)
   const { supabase } = await requireUser()
   const session = await getSession(sessionId)
   if (!session || session.status === "completed" || session.status === "void") throw new Error("Sesi tidak bisa diubah.")

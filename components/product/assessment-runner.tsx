@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { NativeSelect } from "@/components/ui/native-select"
 
 type Snapshot = { version: string; levels: Level[] }
-type SaveState = "saved" | "saving" | "offline" | "error"
+type SaveState = "saved" | "saving" | "offline" | "error" | "dirty"
 
 export function AssessmentRunner({
   id,
@@ -18,6 +18,7 @@ export function AssessmentRunner({
   revision: initialRevision,
   snapshot,
   initialAnswers,
+  initialMistakes,
 }: {
   id: string
   participantName: string
@@ -25,6 +26,7 @@ export function AssessmentRunner({
   revision: number
   snapshot: Snapshot
   initialAnswers: Answer[]
+  initialMistakes: string[]
 }) {
   const startingIndex = Math.max(
     0,
@@ -39,6 +41,7 @@ export function AssessmentRunner({
   const [levelIndex, setLevelIndex] = useState(startingIndex)
   const [questionIndex, setQuestionIndex] = useState(0)
   const [answers, setAnswers] = useState<Answer[]>(initialAnswers)
+  const [mistakes, setMistakes] = useState<string[]>(initialMistakes)
   const [childMode, setChildMode] = useState(false)
   const [showKey, setShowKey] = useState(false)
   const [showVerification, setShowVerification] = useState(false)
@@ -47,6 +50,7 @@ export function AssessmentRunner({
   const [note, setNote] = useState(firstAnswer?.note ?? "")
   const [saveState, setSaveState] = useState<SaveState>("saved")
   const [error, setError] = useState("")
+  const [speechError, setSpeechError] = useState("")
   const revision = useRef(initialRevision)
   const queue = useRef<Answer[]>([])
   const flushing = useRef(false)
@@ -64,6 +68,8 @@ export function AssessmentRunner({
   const coreCount = level.questions.filter(
     (item) => item.role === "core"
   ).length
+  const levelMistakes = level.questions.filter((item) => item.role === "core" && mistakes.includes(item.id)).length
+  const stopAtBoundary = snapshot.version !== "tangga-angka-v1" && levelMistakes >= 2
 
   useEffect(() => {
     let sentinel: WakeLockSentinel | null = null
@@ -130,11 +136,15 @@ export function AssessmentRunner({
     nextNote: string
   ) {
     if (draftTimer.current) clearTimeout(draftTimer.current)
-    setSaveState("saving")
     const questionId = question.id
     const priorStatus =
       answers.find((item) => item.question_id === questionId)?.status ??
       "not_asked"
+    if (priorStatus !== "not_asked") {
+      setSaveState("dirty")
+      return
+    }
+    setSaveState("saving")
     draftTimer.current = setTimeout(() => {
       const answer: Answer = {
         question_id: questionId,
@@ -160,21 +170,23 @@ export function AssessmentRunner({
       question_id: question.id,
       status,
       response: response.trim() || undefined,
-      help: help || undefined,
+      help: (status === "assisted" ? help || "Dibantu Kakak" : help) || undefined,
       note: note.trim() || undefined,
     }
     setAnswers((previous) => [
       ...previous.filter((item) => item.question_id !== question.id),
       answer,
     ])
+    if (status === "incorrect") setMistakes((previous) => previous.includes(question.id) ? previous : [...previous, question.id])
     queue.current = [
-      ...queue.current.filter((item) => item.question_id !== question.id),
+      ...queue.current.filter((item) => item.question_id !== question.id || item.status !== "not_asked"),
       answer,
     ]
     void flush()
-    if (questionIndex < items.length - 1) selectQuestion(questionIndex + 1)
+    if (status !== "incorrect" && questionIndex < items.length - 1) selectQuestion(questionIndex + 1)
   }
   function switchLevel(next: number) {
+    if ("speechSynthesis" in window) window.speechSynthesis.cancel()
     setLevelIndex(next)
     setShowVerification(false)
     selectQuestion(
@@ -183,6 +195,18 @@ export function AssessmentRunner({
         (item) => item.role === "core" || item.role === "practice"
       )
     )
+  }
+  function readQuestion() {
+    setSpeechError("")
+    if (!("speechSynthesis" in window)) {
+      setSpeechError("Fitur suara tidak tersedia di perangkat ini.")
+      return
+    }
+    window.speechSynthesis.cancel()
+    const speech = new SpeechSynthesisUtterance(question.prompt)
+    speech.lang = "id-ID"
+    speech.rate = 0.85
+    window.speechSynthesis.speak(speech)
   }
   if (!question) return null
   const allCoreAnswered = level.questions
@@ -283,6 +307,8 @@ export function AssessmentRunner({
           <h2 className="mt-3 font-heading text-3xl leading-snug sm:text-4xl">
             {question.prompt}
           </h2>
+          <Button variant="outline" className="mt-5" onClick={readQuestion}>Dengarkan soal</Button>
+          {speechError && <p role="status" className="mt-2 text-sm">{speechError}</p>}
           {question.visual && (
             <div
               className="mt-7 flex min-h-36 flex-wrap items-center justify-center gap-3 rounded-2xl bg-[#fcf8ee] p-5"
@@ -341,7 +367,7 @@ export function AssessmentRunner({
                     className="mb-2 block text-sm font-semibold"
                     htmlFor="response"
                   >
-                    Jawaban singkat, opsional
+                    Jawaban yang dipilih anak
                   </label>
                   <Input
                     id="response"
@@ -351,7 +377,7 @@ export function AssessmentRunner({
                       scheduleDraft(event.target.value, help, note)
                     }}
                     maxLength={300}
-                    placeholder="Yang diucapkan peserta"
+                    placeholder="Contoh: 9 pada soal 12 ÷ 3"
                   />
                 </div>
                 <div>
@@ -359,7 +385,7 @@ export function AssessmentRunner({
                     className="mb-2 block text-sm font-semibold"
                     htmlFor="help"
                   >
-                    Bantuan yang digunakan
+                    Alat atau bantuan yang digunakan
                   </label>
                   <NativeSelect
                     id="help"
@@ -399,21 +425,26 @@ export function AssessmentRunner({
                   Tulis yang terlihat, bukan label. Contoh: “menghitung
                   satu-satu dengan jari”, bukan “lambat”.
                 </p>
+                {current && current.status !== "not_asked" && <p className="mt-1 text-xs text-[#4d6156]">Setelah mengubah jawaban atau catatan, tekan status lagi untuk menyimpan.</p>}
               </div>
-              <div className="mt-5 grid gap-2 sm:grid-cols-3">
-                <Button onClick={() => record("correct")}>Benar</Button>
-                <Button variant="outline" onClick={() => record("incorrect")}>
+              <div className="mt-5 grid gap-2 sm:grid-cols-4">
+                <Button onClick={() => record("correct")}>Benar sendiri</Button>
+                <Button variant="outline" disabled={!response.trim() || (current?.status === "incorrect" && response.trim() === current.response?.trim())} onClick={() => record("assisted")}>Dibantu Kakak</Button>
+                <Button variant="outline" disabled={!response.trim()} onClick={() => record("incorrect")}>
                   Belum tepat
                 </Button>
                 <Button variant="outline" onClick={() => record("skipped")}>
                   Lewati
                 </Button>
               </div>
+              {!response.trim() && <p className="mt-2 text-xs text-[#4d6156]">Catat jawaban anak sebelum menandai “Belum tepat”, agar cara berpikirnya dapat ditinjau.</p>}
               {current && (
                 <p className="mt-3 text-sm text-[#4d6156]">
                   Tercatat:{" "}
                   {current.status === "correct"
-                    ? "Benar"
+                    ? "Benar sendiri"
+                    : current.status === "assisted"
+                      ? "Dibantu Kakak"
                     : current.status === "incorrect"
                       ? "Belum tepat"
                       : current.status === "skipped"
@@ -441,23 +472,24 @@ export function AssessmentRunner({
             </>
           )}
         </section>
-        {!childMode && allCoreAnswered && (
+        {!childMode && (allCoreAnswered || stopAtBoundary) && (
           <section className="surface mt-5 p-5" aria-live="polite">
             <h2 className="font-heading text-xl">
               Ringkasan level {level.code}
             </h2>
             <p className="mt-2 text-sm">
-              {outcome.score} dari {coreCount} soal inti benar. Ambang level ini{" "}
-              {level.threshold} benar.{" "}
+              {outcome.score} dari {coreCount} soal inti benar sendiri. Ambang level ini{" "}
+              {level.threshold} benar sendiri.{" "}
               {outcome.passed
                 ? "Kriteria terpenuhi."
                 : "Kriteria belum terpenuhi."}
             </p>
             <p className="mt-1 text-xs text-[#4d6156]">
-              Soal latihan dan verifikasi tidak mengubah ambang.
+              {stopAtBoundary ? "Dua soal pada tingkat ini belum tepat. Ini batas sementara; bantu anak menyelesaikan soal terakhir, lalu tinjau hasil."
+                : "Jawaban setelah dibantu dicatat sebagai kemajuan belajar, tetapi tidak dihitung lulus mandiri."}
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
-              {levelIndex < snapshot.levels.length - 1 && (
+              {outcome.passed && levelIndex < snapshot.levels.length - 1 && (
                 <Button onClick={() => switchLevel(levelIndex + 1)}>
                   Lanjut level berikutnya
                 </Button>

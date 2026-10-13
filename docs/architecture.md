@@ -12,12 +12,18 @@ flowchart LR
 
 - Auth memakai cookie Supabase SSR yang diperbarui oleh `proxy.ts`. Halaman privat memeriksa klaim JWT terverifikasi melalui `getClaims()` dan keanggotaan. Jalur kuis publik tidak melakukan panggilan Auth.
 - Pembuatan sesi, simpan jawaban, dan finalisasi memakai RPC database dengan konteks JWT pengguna. RLS tetap membatasi baca serta tabel lain.
-- Instrumen versi `tangga-angka-v1` tersimpan sebagai level dan soal di database. RPC menyalin snapshot ke sesi. Revisi instrumen berikutnya harus berupa versi baru.
+- Instrumen `tangga-angka-v1` dan `tangga-angka-v2` tersimpan sebagai level dan soal di database. RPC menyalin snapshot versi terbaru ke sesi; sesi lama tetap memakai versinya sendiri.
 - `revision` mencegah tulis bersamaan. `idempotency_key` mencegah duplikasi sesi. Finalisasi mengunci row dan mengembalikan sesi selesai pada retry.
 - Komponen layar asesmen menerima snapshot server, lalu menahan antrean sementara hanya dalam memori. Pilihan ini membatasi residu data privat di perangkat bersama, dengan konsekuensi tab harus tetap terbuka saat offline.
 - Server action memvalidasi input melalui Zod; RPC memvalidasi ulang status, soal, akses peserta, dan revisi.
 
 Keputusan berikutnya: bila penggunaan offline penuh diperlukan, rancang penyimpanan lokal terenkripsi dengan masa hidup singkat, migrasi key aman, dan prosedur penghapusan perangkat. Implementasi sekarang mendukung koneksi putus sesaat selama tab tetap terbuka.
+
+## Pertemuan kedua
+
+`assessment_answer_events` menyimpan urutan jawaban per soal, termasuk pilihan yang salah sebelum relawan membantu. `assessment_responses` tetap menyimpan status akhir per soal. `assessment_observations.day1_metrics` menyimpan semangat empat kegiatan, lama fokus, dan pengamatan perilaku belajar.
+
+`/mission/[participantId]` menjalankan Kuis Misi lima soal berdasarkan materi yang direkomendasikan dari asesmen terakhir. Aksi server menghitung jawaban benar mandiri dan menyimpan hasil ke `mission_attempts`; layar anak hanya menampilkan pesan selesai tanpa skor. Riwayat dapat ditinjau dari halaman peserta.
 
 ## Kuis publik
 

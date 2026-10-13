@@ -71,6 +71,10 @@ export default async function DashboardPage() {
           <p className="mt-2 font-heading text-4xl">{sessions.count ?? 0}</p>
         </div>
       </section>
+      <Link href="/guide/day1" className="surface mt-5 flex items-center justify-between gap-3 p-5 hover:bg-[#f2f7f3]">
+        <span><strong className="block">Panduan pertemuan kedua</strong><small className="text-[#4d6156]">Rundown, cara mendampingi, pengamatan, dan aturan aman.</small></span>
+        <span className="font-semibold text-[#2e5a4c]">Buka →</span>
+      </Link>
       <div className="mt-7 grid gap-6 lg:grid-cols-2">
         <section>
           <h2 className="mb-3 font-heading text-2xl">Lanjutkan sesi</h2>

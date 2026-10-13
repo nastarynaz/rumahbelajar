@@ -21,6 +21,13 @@ export function ReviewForm({
     tools: string[]
     motivator: string | null
     note: string | null
+    day1_metrics?: {
+      engagement?: { opener?: number | null; desk?: number | null; game?: number | null; tablet?: number | null }
+      focus_minutes?: number | null
+      comfort?: string
+      peer_help?: string
+      tablet_use?: string
+    } | null
   } | null
 }) {
   const [counting, setCounting] = useState(observation?.counting_method ?? "")
@@ -31,6 +38,16 @@ export function ReviewForm({
   const [tools, setTools] = useState(observation?.tools ?? [])
   const [motivator, setMotivator] = useState(observation?.motivator ?? "")
   const [note, setNote] = useState(observation?.note ?? "")
+  const [engagement, setEngagement] = useState({
+    opener: observation?.day1_metrics?.engagement?.opener ?? null,
+    desk: observation?.day1_metrics?.engagement?.desk ?? null,
+    game: observation?.day1_metrics?.engagement?.game ?? null,
+    tablet: observation?.day1_metrics?.engagement?.tablet ?? null,
+  })
+  const [focusMinutes, setFocusMinutes] = useState<string>(String(observation?.day1_metrics?.focus_minutes ?? ""))
+  const [comfort, setComfort] = useState(observation?.day1_metrics?.comfort ?? "")
+  const [peerHelp, setPeerHelp] = useState(observation?.day1_metrics?.peer_help ?? "")
+  const [tabletUse, setTabletUse] = useState(observation?.day1_metrics?.tablet_use ?? "")
   const [state, setState] = useState("")
   const [busy, setBusy] = useState(false)
   const [reason, setReason] = useState("")
@@ -45,6 +62,13 @@ export function ReviewForm({
         tools,
         motivator,
         note,
+        day1_metrics: {
+          engagement,
+          focus_minutes: focusMinutes === "" ? null : Number(focusMinutes),
+          comfort,
+          peer_help: peerHelp,
+          tablet_use: tabletUse,
+        },
       })
       setState("Catatan tersimpan")
     } catch (error) {
@@ -144,6 +168,23 @@ export function ReviewForm({
               onChange={(event) => setNote(event.target.value)}
             />
           </label>
+          <fieldset className="space-y-3 rounded-xl bg-[#f2f7f3] p-4">
+            <legend className="font-semibold">Semangat per kegiatan</legend>
+            <p className="text-xs text-[#4d6156]">1 = kurang tertarik, 2 = biasa, 3 = antusias. Kosongkan bila tidak diamati.</p>
+            {([
+              ["opener", "Kakak Bilang"], ["desk", "Meja Belajar"], ["game", "Permainan"], ["tablet", "Tablet"],
+            ] as const).map(([key, label]) => <label key={key} className="block text-sm font-semibold">{label}
+              <NativeSelect className="mt-1" value={engagement[key] ?? ""} onChange={(event) => setEngagement((previous) => ({ ...previous, [key]: event.target.value ? Number(event.target.value) : null }))}>
+                <option value="">Belum diamati</option><option value="1">1 · kurang tertarik</option><option value="2">2 · biasa</option><option value="3">3 · antusias</option>
+              </NativeSelect>
+            </label>)}
+          </fieldset>
+          <label className="block text-sm font-semibold">Lama fokus di Meja Belajar (menit)
+            <Input className="mt-2" type="number" min={0} max={90} value={focusMinutes} onChange={(event) => setFocusMinutes(event.target.value)} />
+          </label>
+          <Select label="Bisa atau belum nyaman?" value={comfort} set={setComfort} options={["bisa dan nyaman", "bisa saat berdua", "bisa dengan benda", "belum paham meski dibantu", "belum dapat disimpulkan"]} />
+          <Select label="Saat membantu teman" value={peerHelp} set={setPeerHelp} options={["memberi petunjuk", "langsung memberi jawaban", "belum diamati"]} />
+          <Select label="Di tablet" value={tabletUse} set={setTabletUse} options={["memilih sendiri", "memakai audio", "minta dibacakan", "dibantu memilih", "belum diamati"]} />
           <Button
             variant="outline"
             className="w-full"
